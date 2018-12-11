@@ -1,0 +1,137 @@
+---
+# tasks file for openldap
+- name: Install remotelly debconf
+  apt: 
+    update_cache: yes
+    name: debconf
+    install_recommends: yes
+    state: present
+
+- name: Configure ldap properties
+  debconf:
+    name: slapd
+    value: "{{ item.value }}"
+    vtype: "{{ item.vtype }}"
+    question: "{{ item.question }}"
+  loop:
+    - question: slapd/no_configuration
+      vtype: boolean
+      value: false
+    - question: slapd/dump_database
+      vtype: select
+      value: when needed
+    - question: slapd/dump_database_destdir
+      vtype: string
+      value: /var/backups/slapd-VERSION
+    - question: slapd/move_old_database
+      vtype: boolean
+      value: false
+    - question: slapd/invalid_config
+      vtype: boolean
+      value: true
+    - question: slapd/domain
+      vtype: string
+      value: "{{ ldap_organization_domain }}"
+    - question: shared/organization
+      vtype: string
+      value: "{{ ldap_organization_name }}"
+    - question: slapd/password1
+      vtype: password
+      value: "{{ ldap_admin_pw }}"
+    - question: slapd/password2
+      vtype: password
+      value: "{{ ldap_admin_pw }}"
+    - question: slapd/password_mismatch
+      vtype: note
+      value: ""
+    - question: slapd/purge_database
+      vtype: boolean
+      value: false
+    - question: slapd/internal/adminpw
+      vtype: password
+      value: "{{ ldap_admin_pw }}"
+    - question: slapd/internal/generated_adminpw
+      vtype: password
+      value: "{{ ldap_admin_pw }}"
+    - question: slapd/upgrade_slapcat_failure
+      vtype: error
+      value: ""
+    - question: slapd/backend
+      vtype: select
+      value: MDB
+    - question: slapd/unsafe_selfwrite_acl
+      vtype: note
+      value: ""
+    - question: slapd/ppolicy_schema_needs_update
+      vtype: select
+      value: abort installation
+
+- name: Install ldap server
+  apt:
+    name: ["slapd", "ldap-utils"]
+    state: present
+
+- name: Create directories to store certificates and keys
+  file:
+    path: "{{ item }}"
+    group: "root"
+    state: "directory"
+    mode: "750"
+    owner: "root"
+  loop:
+    - "{{ files_dir }}"
+    - "{{ CA.ca_cert_file | dirname }}"
+    - "{{ CA.clients[0].files_dir | dirname }}"
+
+- name: copy neccesary certificates and keys (I)
+  copy:
+    dest: {item}
+    src: { item }
+    group: "root"
+    mode: "644"
+    owner: "root"
+  loop:
+    - "{{ CA.ca_cert_file }}"
+
+- name: copy neccesary certificates and keys (II)
+  copy:
+    dest: {item}
+    src: { item }
+    group: "root"
+    mode: "640"
+    owner: "root"
+  loop:
+    - "{{ CA.clients[0].client_cert_file }}"
+    - "{{ CA.clients[0].client_priv_key }}"
+
+- name: Configure OpenLDAP SSL support
+  ldap_attr:
+    dn: "cn=config"
+    name: "{{ item.0 }}"
+    values: "{{ item.1 }}"
+    state: exact
+  with_together:
+    - [ "olcTLSCertificateFile", "olcTLSCertificateKeyFile", "olcTLSCACertificateFile" ]
+    - [ "{{ CA.clients[0].client_cert_file }}", "{{ CA.clients[0].client_priv_key }}", "{{ CA.ca_cert_file }}" ]
+
+- name: Restart slapd service (OpenLDAP)
+  service:
+    name: slapd
+    state: restarted
+
+- name: Configure ldap client
+  lineinfile:
+    path: /etc/hosts
+    state: present
+    line: "{{ ansible_default_ipv4.address }} {{ ldap_server_domain }}"
+
+- name: Configure ldap client
+  lineinfile:
+    path: /etc/ldap/ldap.conf
+    state: present
+    line: "{{ item }}"
+  loop:
+    - "TLS_CA_CERT {{ CA.ca_cert_file }}"
+    - "TLS_REQ_CERT never"
+    - "BASE dc=esei,dc=uvigo,dc=es"
+    - "URI ldaps://{{ ldap_server_domain }}"

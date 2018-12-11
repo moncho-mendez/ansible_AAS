@@ -1,0 +1,21 @@
+---
+
+- hosts: all
+  tasks:
+   - name: Install docker on all servers
+     include_role: docker
+
+- hosts: leader
+  tasks:
+   - name: Initialize swarm on leader
+     include_role: docker_leader
+
+- hosts: workers
+  tasks:
+   - name: Add workers to swarm cluster
+     include_role: docker_worker
+
+- hosts: managers
+  tasks:
+   - name: Add managers to swarm cluster
+     include_role: docker_manager

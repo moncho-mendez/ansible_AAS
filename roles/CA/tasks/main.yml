@@ -1,0 +1,41 @@
+---
+# tasks file for CA
+
+- name: Install required software (Debian)
+  apt: 
+    name: python-openssl
+    state: present
+    update_cache: yes
+  when: ansible_distribution=="Debian"
+
+- name: Install required software (OSX)
+  pip: 
+    name: pyOpenSSL
+    state: present
+  when: ansible_distribution=="MacOSX"
+
+- name: Generate a private key for CA
+  openssl_privatekey:
+    path: "{{ CA.ca_priv_key }}"
+
+- name: Generate a Certificate request 
+  openssl_csr:
+    path: "{{ CA.ca_csr_file }}"
+    privatekey_path: "{{ CA.ca_priv_key }}"
+    common_name: "{{ CA.ca_cn }}"
+
+- name: Generate the certificates
+  openssl_certificate:
+    path: "{{ CA.ca_cert_file }}"
+    privatekey_path: "{{ CA.ca_priv_key }}"
+    csr_path: "{{ CA.ca_csr_file }}"
+    provider: selfsigned
+
+- name: Generate clients
+  include_tasks: client.yml
+  loop: "{{ CA.clients }}"
+  vars:
+    client_cn: "{{ item.client_cn }}"
+    client_cert_file: "{{ item.client_cert_file }}"
+    client_csr_file: "{{ item.client_csr_file }}"
+    client_priv_key: "{{ item.client_priv_key }}"

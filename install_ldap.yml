@@ -1,0 +1,31 @@
+---
+
+- hosts: localhost
+  vars_files:
+    - config_vars.yml
+  tasks:
+    - name: Create directories
+      file:
+        path: "{{ item }}"
+        group: "root"
+        state: "directory"
+        mode: "750"
+        owner: "root"
+      loop: 
+        - "{{ files_dir }}"
+        - "{{ CA.ca_cert_file | dirname }}"
+        - "{{ CA.clients[0].client_cert_file | dirname }}"
+
+    - name: Generate certificates
+      import_role: 
+        name: CA
+
+- hosts: ldap_server
+  vars_files:
+    - config_vars.yml
+  tasks:
+   - name: Install Open LDAP
+     include_role: 
+        name: openldap
+
+  

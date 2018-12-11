@@ -1,0 +1,20 @@
+---
+# Generates one client
+
+- name: generate client private key
+  openssl_privatekey:
+    path: "{{ client_priv_key }}"
+
+- name: Generate client CSR
+  openssl_csr:
+    path: "{{ client_csr_file }}"
+    privatekey_path: "{{ client_priv_key }}"
+    common_name: "{{ client_cn }}"
+
+- name: Generate an OpenSSL certificate signed with your own CA certificate
+  openssl_certificate:
+    path: "{{ client_cert_file }}"
+    csr_path: "{{ client_csr_file }}"
+    ownca_path: "{{ CA.ca_cert_file }}"
+    ownca_privatekey_path: "{{ CA.ca_priv_key }}"
+    provider: ownca
