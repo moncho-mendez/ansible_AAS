@@ -1,0 +1,32 @@
+---
+# tasks file for ldap-client
+
+- name: Install client software
+  apt:
+    name: ["ldap-utils", "jxplorer"]
+    state: present
+
+- name: Configure this host as ldap client
+  lineinfile:
+      path: /etc/hosts
+      state: present
+      line: "{{ ldap_server_ip }} {{ ldap_server_domain }}"
+
+- name: Configure ldap client
+  lineinfile:
+      path: /etc/ldap/ldap.conf
+      state: present
+      line: "{{ item }}"
+  loop:
+  - "TLS_CA_CERT {{ CA.ca_cert_file }}"
+  - "TLS_REQ_CERT never"
+  - "BASE {{ ldap_base_dn }}"
+  - "URI ldaps://{{ ldap_server_domain }}"
+
+- name: Import SSL certificate from our CA to Java cacerts keystore
+  java_cert:
+    cert_path: "{{ CA.ca_cert_file }}"
+    cert_port: 443
+    keystore_path: /usr/lib/jvm/jre7/lib/security/cacerts
+    keystore_pass: changeit
+    state: present

@@ -2,7 +2,7 @@
 
 - hosts: localhost
   vars_files:
-    - config_vars.yml
+    - ldap_config_vars.yml
   tasks:
     - name: Create directories
       file:
@@ -22,7 +22,7 @@
 
 - hosts: ldap_server
   vars_files:
-    - config_vars.yml
+    - ldap_config_vars.yml
   tasks:
    - name: Install Open LDAP
      include_role: 

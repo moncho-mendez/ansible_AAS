@@ -133,5 +133,5 @@
   loop:
     - "TLS_CA_CERT {{ CA.ca_cert_file }}"
     - "TLS_REQ_CERT never"
-    - "BASE dc=esei,dc=uvigo,dc=es"
+    - "BASE {{ ldap_base_dn }}"
     - "URI ldaps://{{ ldap_server_domain }}"

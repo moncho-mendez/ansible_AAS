@@ -1,0 +1,8 @@
+- hosts: ldap_client
+  gather_facts: yes
+  vars_files:
+    - ldap_config_vars.yml
+  tasks:
+   - name: Install Open LDAP
+     include_role: 
+        name: ldap-client
