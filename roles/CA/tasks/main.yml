@@ -23,12 +23,28 @@
     path: "{{ CA.ca_csr_file }}"
     privatekey_path: "{{ CA.ca_priv_key }}"
     common_name: "{{ CA.ca_cn }}"
+    key_usage: 
+      - digitalSignature
+      - nonRepudiation 
+      - keyEncipherment
+      - dataEncipherment
+      - keyAgreement
+      - keyCertSign
+      - cRLSign
 
 - name: Generate the certificates
   openssl_certificate:
     path: "{{ CA.ca_cert_file }}"
     privatekey_path: "{{ CA.ca_priv_key }}"
     csr_path: "{{ CA.ca_csr_file }}"
+    key_usage: 
+      - digitalSignature
+      - nonRepudiation 
+      - keyEncipherment
+      - dataEncipherment
+      - keyAgreement
+      - keyCertSign
+      - cRLSign
     provider: selfsigned
 
 - name: Generate clients

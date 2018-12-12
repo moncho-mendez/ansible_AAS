@@ -7,7 +7,6 @@
     - name: Create directories
       file:
         path: "{{ item }}"
-        group: "root"
         state: "directory"
         mode: "750"
         owner: "root"
@@ -25,7 +24,7 @@
     - ldap_config_vars.yml
   tasks:
    - name: Install Open LDAP
-     include_role: 
+     import_role: 
         name: openldap
 
   

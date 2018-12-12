@@ -3,7 +3,7 @@
 
 - name: Install client software
   apt:
-    name: ["ldap-utils", "jxplorer"]
+    name: ["ldap-utils", "jxplorer", "x11-xserver-utils"]
     state: present
 
 - name: Configure this host as ldap client
@@ -18,7 +18,7 @@
       state: present
       line: "{{ item }}"
   loop:
-  - "TLS_CA_CERT {{ CA.ca_cert_file }}"
+  - "TLS_CACERT {{ CA.ca_cert_file }}"
   - "TLS_REQ_CERT never"
   - "BASE {{ ldap_base_dn }}"
   - "URI ldaps://{{ ldap_server_domain }}"
@@ -26,7 +26,19 @@
 - name: Import SSL certificate from our CA to Java cacerts keystore
   java_cert:
     cert_path: "{{ CA.ca_cert_file }}"
-    cert_port: 443
-    keystore_path: /usr/lib/jvm/jre7/lib/security/cacerts
+    keystore_path: /etc/ssl/certs/java/cacerts #default on Debian
     keystore_pass: changeit
+    cert_alias: "{{ ldap_organization_name }}"
+    state: absent
+
+- name: Import SSL certificate from our CA to Java cacerts keystore
+  java_cert:
+    cert_path: "{{ CA.ca_cert_file }}"
+    keystore_path: /etc/ssl/certs/java/cacerts #default on Debian
+    keystore_pass: changeit
+    cert_alias: "{{ ldap_organization_name }}"
     state: present
+
+- name: Inform
+  debug:
+    msg: "Just start \"ssh -X -Y username@hostname jxplorer\" to run it"

@@ -10,6 +10,15 @@
     path: "{{ client_csr_file }}"
     privatekey_path: "{{ client_priv_key }}"
     common_name: "{{ client_cn }}"
+    key_usage:
+         - digitalSignature
+         - nonRepudiation
+         - keyEncipherment
+         - dataEncipherment
+         - keyAgreement
+    extended_key_usage: 
+         - serverAuth
+         - clientAuth    
 
 - name: Generate an OpenSSL certificate signed with your own CA certificate
   openssl_certificate:
@@ -17,4 +26,13 @@
     csr_path: "{{ client_csr_file }}"
     ownca_path: "{{ CA.ca_cert_file }}"
     ownca_privatekey_path: "{{ CA.ca_priv_key }}"
+    key_usage:
+         - digitalSignature
+         - nonRepudiation
+         - keyEncipherment
+         - dataEncipherment
+         - keyAgreement
+    extended_key_usage: 
+         - serverAuth
+         - clientAuth
     provider: ownca
