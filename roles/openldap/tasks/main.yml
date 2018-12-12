@@ -116,19 +116,8 @@
 #     - [ "{{ CA.clients[0].client_cert_file }}", "{{ CA.clients[0].client_priv_key }}", "{{ CA.ca_cert_file }}" ]
 
 - name: Configure OpenLDAP SSL support
-  shell:
-      cmd: |
-          cat <<EOF | /usr/bin/ldapmodify -H ldapi:/// -Y EXTERNAL
-          dn: cn=config
-          add: olcTLSCACertificateFile
-          olcTLSCACertificateFile: "{{ CA.ca_cert_file }}"
-          -
-          add: olcTLSCertificateFile
-          olcTLSCertificateFile: "{{ CA.clients[0].client_cert_file }}"
-          -
-          add: olcTLSCertificateKeyFile
-          olcTLSCertificateKeyFile: "{{ CA.clients[0].client_priv_key }}"
-          EOF
+  shell: |
+     echo -e "dn: cn=config\nadd: olcTLSCACertificateFile\nolcTLSCACertificateFile: /opt/ssl/ca/ca.pem\n-\nadd: olcTLSCertificateFile\nolcTLSCertificateFile: /opt/ssl/ldap/ldap.pem\n-\nadd: olcTLSCertificateKeyFile\nolcTLSCertificateKeyFile: /opt/ssl/ldap/ldap.key\n" | /usr/bin/ldapmodify -H ldapi:/// -Y EXTERNAL
   ignore_errors: yes
 
 - name: Enable SSL service on LDAP
