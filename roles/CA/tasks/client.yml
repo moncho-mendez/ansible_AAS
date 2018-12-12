@@ -12,13 +12,9 @@
     common_name: "{{ client_cn }}"
     key_usage:
          - digitalSignature
-         - nonRepudiation
-         - keyEncipherment
          - dataEncipherment
-         - keyAgreement
     extended_key_usage: 
-         - serverAuth
-         - clientAuth    
+         - serverAuth 
 
 - name: Generate an OpenSSL certificate signed with your own CA certificate
   openssl_certificate:
@@ -28,11 +24,7 @@
     ownca_privatekey_path: "{{ CA.ca_priv_key }}"
     key_usage:
          - digitalSignature
-         - nonRepudiation
-         - keyEncipherment
          - dataEncipherment
-         - keyAgreement
     extended_key_usage: 
          - serverAuth
-         - clientAuth
     provider: ownca

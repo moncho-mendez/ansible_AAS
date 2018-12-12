@@ -88,7 +88,8 @@
     dest: "{{ item }}"
     src: "{{ item }}"
     mode: "644"
-    owner: "root"
+    owner: "openldap"
+    group: "openldap"
   loop:
     - "{{ CA.ca_cert_file }}"
 
@@ -97,7 +98,8 @@
     dest: "{{ item }}"
     src: "{{ item }}"
     mode: "640"
-    owner: "root"
+    owner: "openldap"
+    group: "openldap"
   loop:
     - "{{ CA.clients[0].client_cert_file }}"
     - "{{ CA.clients[0].client_priv_key }}"
@@ -117,8 +119,8 @@
 
 - name: Configure OpenLDAP SSL support
   shell: |
-     echo -e "dn: cn=config\nadd: olcTLSCACertificateFile\nolcTLSCACertificateFile: /opt/ssl/ca/ca.pem\n-\nadd: olcTLSCertificateFile\nolcTLSCertificateFile: /opt/ssl/ldap/ldap.pem\n-\nadd: olcTLSCertificateKeyFile\nolcTLSCertificateKeyFile: /opt/ssl/ldap/ldap.key\n" | /usr/bin/ldapmodify -H ldapi:/// -Y EXTERNAL
-  ignore_errors: yes
+     chown -R openldap.openldap {{ files_dir }}
+     echo -e "dn: cn=config\nadd: olcTLSCACertificateFile\nolcTLSCACertificateFile: {{ CA.ca_cert_file }}\n-\nadd: olcTLSCertificateFile\nolcTLSCertificateFile: {{ CA.clients[0].client_cert_file }}\n-\nadd: olcTLSCertificateKeyFile\nolcTLSCertificateKeyFile: {{ CA.clients[0].client_priv_key }}\n" | /usr/bin/ldapmodify -H ldapi:/// -Y EXTERNAL
 
 - name: Enable SSL service on LDAP
   lineinfile:
