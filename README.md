@@ -9,6 +9,22 @@ All of these ansible files works in Debian 9 (streetch, stable). Therefore, you 
 apt-get install python-pip
 pip install ansible
 ```
+Please note that configurations of target computers are configured to have test user with sudo capabilities with no password. So before you can use these scripts you should install a minimal debian 9 system (perhaps using debian stable netinstall image) and execute the following commands:
+
+```bash
+apt-get install ssh sudo
+export EDITOR=vi && visudo
+```
+And add the following line: 
+
+```
+test	ALL=(ALL:ALL) NOPASSWD:ALL
+```
+
+Then from the ansible host you can install your ssh key using 
+```
+ssh-copy-id test@<destination>
+```
 
 This work includes roles to work with:
 * Docker swarm

@@ -74,10 +74,10 @@
 - name: Create directories to store certificates and keys
   file:
     path: "{{ item }}"
-    group: "root"
+    group: "openldap"
     state: "directory"
     mode: "750"
-    owner: "root"
+    owner: "openldap"
   loop:
     - "{{ files_dir }}"
     - "{{ CA.ca_cert_file | dirname }}"

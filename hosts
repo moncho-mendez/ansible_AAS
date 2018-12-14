@@ -3,7 +3,7 @@ ldap_server ansible_ssh_host=192.168.112.181 ansible_connection=ssh ansible_user
 ldap_client ansible_ssh_host=192.168.112.181 ansible_connection=ssh ansible_user=test ansible_become=yes ansible_become_method=sudo
 
 [pam_ldap_clients]
-cli1 ansible_ssh_host=192.168.112.181 ansible_connection=ssh ansible_user=test ansible_become=yes ansible_become_method=sudo
+cli1 ansible_ssh_host=192.168.112.182 ansible_connection=ssh ansible_user=test ansible_become=yes ansible_become_method=sudo
 
 [managers]
 leader ansible_ssh_host=172.31.0.25 ansible_connection=ssh ansible_user=administrador ansible_become=yes ansible_become_method=sudo

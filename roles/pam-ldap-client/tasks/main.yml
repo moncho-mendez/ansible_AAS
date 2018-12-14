@@ -6,13 +6,24 @@
     name: ldap-utils
     state: present
 
+- name: Create directories to store certificates and keys
+  file:
+    path: "{{ item }}"
+    group: "root"
+    state: "directory"
+    mode: "755"
+    owner: "root"
+  loop:
+    - "{{ files_dir }}"
+    - "{{ CA.ca_cert_file | dirname }}"
+
 - name: copy neccesary certificates and keys
   copy:
     dest: "{{ item }}"
     src: "{{ item }}"
     mode: "644"
-    owner: "openldap"
-    group: "openldap"
+    owner: "root"
+    group: "root"
   loop:
     - "{{ CA.ca_cert_file }}"
 
@@ -203,23 +214,23 @@
 
 - name: configure nsswitch-ldap
   lineinfile:
-      path: /etc/nsswitch.conf
-      state: present
-      regexp: "{{ item.regex }}"
+      path: "/etc/nsswitch.conf"
+      regexp: "{{ item.regexp }}"
       line: "{{ item.line }}"
+      state: present
   loop:
-    - line: "passwd:         files ldap"
-      regex: "^passwd"
-    - line: "group:          files ldap"
-      regex: "^group"
-    - line: "shadow:         files ldap"
-      regex: "^shadow"
-    - line: "gshadow:        files ldap"
-      regex: "^gshadow"
-    - line: "hosts:          files ldap dns"
-      regex: "^hosts"
-    - line: "networks:       files ldap"
-      regex: "^networks"
+    - line: 'passwd:         files ldap'
+      regexp: '^passwd'
+    - line: 'group:          files ldap'
+      regexp: '^group'
+    - line: 'shadow:         files ldap'
+      regexp: '^shadow'
+    - line: 'gshadow:        files ldap'
+      regexp: '^gshadow'
+    - line: 'hosts:          files ldap dns'
+      regexp: '^hosts'
+    - line: 'networks:       files ldap'
+      regexp: '^networks'
 
 
 # see https://docs.cumulusnetworks.com/download/attachments/8362556/kb_debconf.txt?version=1&modificationDate=1537401093000&api=v2
@@ -248,7 +259,18 @@
     description: "Override local changes to /etc/pam.d/common-*?"
   - question: libpam-runtime/no_profiles_chosen
     type: error
+    value: ""
     description: "No PAM profiles have been selected."
 
 - name: Invoke dpkg-reconfigure to reconfigure libpam-runtime
-  shell: dpkg-reconfigure libpam-runtime
+  shell: dpkg-reconfigure  --frontend noninteractive  libpam-runtime
+
+- name: ensure mkhomedir module is present in /etc/pam.d/common-session
+  lineinfile:
+    dest: /etc/pam.d/{{ item }}
+    line: session optional pam_mkhomedir.so skel=/etc/skel umask=077
+    regexp: ^session\s+required\s+pam_mkhomedir.so.*$
+    state: present
+  with_items:
+    - common-session
+    - common-session-noninteractive 
