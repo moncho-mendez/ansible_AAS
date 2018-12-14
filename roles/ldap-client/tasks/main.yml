@@ -6,6 +6,16 @@
     name: ["ldap-utils", "jxplorer", "x11-xserver-utils"]
     state: present
 
+- name: copy neccesary certificates and keys
+  copy:
+    dest: "{{ item }}"
+    src: "{{ item }}"
+    mode: "644"
+    owner: "openldap"
+    group: "openldap"
+  loop:
+    - "{{ CA.ca_cert_file }}"
+
 - name: Configure this host as ldap client
   lineinfile:
       path: /etc/hosts
