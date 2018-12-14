@@ -5,8 +5,10 @@ These ansible roles are part of the materials for the AAS subject (Advanced Syst
 
 All of these ansible files works in Debian 9 (streetch, stable). Therefore, you can run the Ansible playbooks using WSL on Windows 10 or Debian 9. All roles have been developed in ansible 2.7. In order to install the latest ansible 2.7 version you should run as root the following commands:
 
+```bash
 \# apt-get install python-pip
 \# pip install ansible
+```
 
 This work includes roles to work with:
 * Docker swarm
@@ -25,14 +27,18 @@ These playbooks also creates an entry in /etc/hosts to match the common name (CN
 There are lots of preconfigured packages through debconf. In order to create these configurations, the packages can be downloaded using apt and decompresed using ar and tar to get the templates file. See an example below:
 
 ```bash
- # cd /tmp && apt-get download libpam-ldap libnss-ldap
- Get:1 http://deb.debian.org/debian stretch/main amd64 libnss-ldap amd64 265-5 [115 kB] 
- Get:2 http://deb.debian.org/debian stretch/main amd64 libpam-ldap amd64 186-4 [87.0 kB] 
- # ar x libnss-ldap_265-5_amd64.deb 
- # tar xvf control.tar.gz 
- # grep -e "^Template:" -e "^Type: " -e "^Default: " -e "^Description: " templates  | \
+ cd /tmp && apt-get download libpam-ldap libnss-ldap
+ ar x libnss-ldap_265-5_amd64.deb 
+ tar xvf control.tar.gz 
+ grep -e "^Template:" -e "^Type: " -e "^Default: " -e "^Description: " templates  | \
      sed -e "s/Template/  - question/" -e "s/^Type/    type/" -e "s/^Default/   \
       value/" -e "s/^Description: \(.*$\)/    escription: \"\1\"/" 
+  
+```
+
+The output should be similar to the following one. Then you should change the values of fill them as required.
+
+```yaml
   - question: libnss-ldap/confperm 
     type: boolean 
     value: false 
