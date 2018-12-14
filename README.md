@@ -24,7 +24,7 @@ These playbooks also creates an entry in /etc/hosts to match the common name (CN
 
 There are lots of preconfigured packages through debconf. In order to create these configurations, the packages can be downloaded using apt and decompresed using ar and tar to get the templates file. See an example below:
 
-```
+```bash
  # cd /tmp && apt-get download libpam-ldap libnss-ldap
  Get:1 http://deb.debian.org/debian stretch/main amd64 libnss-ldap amd64 265-5 [115 kB] 
  Get:2 http://deb.debian.org/debian stretch/main amd64 libpam-ldap amd64 186-4 [87.0 kB] 
@@ -77,7 +77,8 @@ There are lots of preconfigured packages through debconf. In order to create the
     description: "LDAP account for root:" 
   - question: libnss-ldap/rootbindpw 
     type: password 
-    description: "LDAP root account password:" ```
+    description: "LDAP root account password:"
+```
 
 The role openldap creates an ldap server and can be invoked using install_ldap_server.yml playbook. The role ldap-client that is invoked using install_ldap_client.yml playbook installs and configures jxplorer (graphical ldap client) and standard ldap tools (ldapsearch, ldapmodify, ldapadd). Finally, the role pam-ldap-client installs pam modules for authentication through openldap with SSL support.
 
