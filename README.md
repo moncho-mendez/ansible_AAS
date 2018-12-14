@@ -6,8 +6,8 @@ These ansible roles are part of the materials for the AAS subject (Advanced Syst
 All of these ansible files works in Debian 9 (streetch, stable). Therefore, you can run the Ansible playbooks using WSL on Windows 10 or Debian 9. All roles have been developed in ansible 2.7. In order to install the latest ansible 2.7 version you should run as root the following commands:
 
 ```bash
-\# apt-get install python-pip
-\# pip install ansible
+apt-get install python-pip
+pip install ansible
 ```
 
 This work includes roles to work with:
