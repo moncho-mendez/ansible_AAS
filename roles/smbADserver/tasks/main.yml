@@ -23,7 +23,7 @@
 
 # tasks file for smbADserver
 
-#Playbook inspirado en https://www.sysadminsdecuba.com/2018/02/pdc-sencillo-con-samba-4-en-debian-9/
+#Inspired in https://www.sysadminsdecuba.com/2018/02/pdc-sencillo-con-samba-4-en-debian-9/
 
 - name: Configure hosts for samba populate
   lineinfile:

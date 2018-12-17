@@ -1,31 +1,87 @@
-Role Name
+pam_ldap_client
 =========
 
-A brief description of the role goes here.
+This is a autentication client for a LDAP server (ldaps protocol) using pam_ldap and libnss_ldap support.
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+A fully functional LDAP server populated with openldap role (that also would require a certiicate autority certificate and client certiticates/keys that can be populates with CA role) 
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+This role shares the variables used by other roles such as openldap and CA. The role works with a stucture containing the following variables
+
+```yaml
+ldap_server_ip: "{{ hostvars['ldap_server'].ansible_ssh_host }}"
+ldap_server_domain: "ldap.esei.uvigo.es"
+ldap_organization_domain: "esei.uvigo.es"
+ldap_base_dn: "{{ ldap_organization_domain | replace('.', ',dc=') | regex_replace('^', 'dc=')  }}"
+ldap_organization_name: "ESEI"
+ldap_admin_pw: "test"
+files_dir: "/opt/ssl"
+CA: 
+  ca_cn: "{{ ldap_organization_domain }}"
+  ca_cert_file: "{{ files_dir }}/ca/ca.pem"
+  ca_csr_file: "{{ files_dir }}/ca/ca.csr"
+  ca_priv_key: "{{ files_dir }}/ca/ca.key"
+  clients:
+    - client_cn: "{{ ldap_server_domain }}"
+      client_cert_file: "{{ files_dir }}/ldap/ldap.pem"
+      client_csr_file: "{{ files_dir }}/ldap/ldap.csr"
+      client_priv_key: "{{ files_dir }}/ldap/ldap.key"
+```
+* ldap_server_ip is the IP (IPv4) of the ldap server  
+* ldap_server_domain is the domain name for the ldap server. Please note that this will be one of the client certificates
+* ldap_organization_domain: is the domain of the organization where LDAP server will be deployed. This domain is used as common name (CN) for the certificate authority
+* ldap_base_dn is used to populate the root dn of the LDAP server
+* ldap_organization_name is the fully qualified name of the organization where the LDAP server will be deployed. It is used to create the certificate authority.
+* ldap_admin_pw is the password that will be used for setup a LDAP server
+* CA: This contains the information about the CA that will be populated and their clients.
+* CA.cn is the common name of the CA
+* ca.ca_cert_file is the path where the certificate for CA will be stored
+* ca.client_csr_file is the path for the intermediate CSR file generated during the signing process.
+* ca.ca_priv_key is the private key for the CA
+* ca.clients is an array describing the properties of al clients of the CA. In general we only populated one client but more clients can be easilly populated by adding elements to this array.
+* ca.clients[i].client_cn, is the common name for the client
+* ca.clients[i].client_cert_file is the path for the file where the client certificate will be stored.
+* ca.clients[i].client_csr_file is the path for the intermediate file storing the CSR (certificate singning request)
+* ca.clients[i].client_priv_key is the file where the private key (no passwd) for the client will be stored. 
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+None
 
 Example Playbook
 ----------------
-
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+```yaml
+- hosts: pam_ldap_clients
+  gather_facts: yes
+  vars_files:
+    ldap_server_ip: "{{ hostvars['ldap_server'].ansible_ssh_host }}"
+    ldap_server_domain: "ldap.esei.uvigo.es"
+    ldap_organization_domain: "esei.uvigo.es"
+    ldap_base_dn: "{{ ldap_organization_domain | replace('.', ',dc=') | regex_replace('^', 'dc=')  }}"
+    ldap_organization_name: "ESEI"
+    ldap_admin_pw: "test"
+    files_dir: "/opt/ssl"
+    CA: 
+      ca_cn: "{{ ldap_organization_domain }}"
+      ca_cert_file: "{{ files_dir }}/ca/ca.pem"
+      ca_csr_file: "{{ files_dir }}/ca/ca.csr"
+      ca_priv_key: "{{ files_dir }}/ca/ca.key"
+      clients:
+        - client_cn: "{{ ldap_server_domain }}"
+          client_cert_file: "{{ files_dir }}/ldap/ldap.pem"
+          client_csr_file: "{{ files_dir }}/ldap/ldap.csr"
+          client_priv_key: "{{ files_dir }}/ldap/ldap.key"
+  tasks:
+   - name: Install and pam support for LDAP
+     include_role: 
+        name: pam-ldap-client
+```
 
 License
 -------
@@ -35,4 +91,4 @@ BSD
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+Implemented by José Ramón Méndez Reboredo. Please note that this is part of the materials for the subject AAS on the MSC on Computer Science (University of Vigo)

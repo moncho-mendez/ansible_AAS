@@ -1,31 +1,51 @@
-Role Name
+smbADserver
 =========
 
-A brief description of the role goes here.
+This is a implementation of Samba 4 PDC (Primary Domain Controller) using internal LDAP server and DNS. The role has been inspired in the following document https://www.sysadminsdecuba.com/2018/02/pdc-sencillo-con-samba-4-en-debian-9/. It susbstitures a LDAP server (such as OpenLDAP).
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+None. 
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+```yaml
+    ldap_server_domain: "ldap.esei.uvigo.es"
+    ldap_organization_domain: "esei.uvigo.es"
+    ldap_base_dn: "{{ ldap_organization_domain | replace('.', ',dc=') | regex_replace('^', 'dc=')  }}"
+    ldap_organization_name: "ESEI"
+    ldap_admin_pw: "test"
+```
+
+* ldap_server_domain is the domain name for the ldap server. Please note that this will be one of the client certificates
+* ldap_organization_domain: is the domain of the organization where LDAP server will be deployed. This domain is used as common name (CN) for the certificate authority
+* ldap_base_dn is used to populate the root dn of the LDAP server
+* ldap_organization_name is the fully qualified name of the organization where the LDAP server will be deployed. It is used to create the certificate authority.
+* ldap_admin_pw is the password that will be used for setup a LDAP server
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+none
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+```yaml
+- hosts: smbADserver
+  vars:
+    ldap_server_domain: "ldap.esei.uvigo.es"
+    ldap_organization_domain: "esei.uvigo.es"
+    ldap_base_dn: "{{ ldap_organization_domain | replace('.', ',dc=') | regex_replace('^', 'dc=')  }}"
+    ldap_organization_name: "ESEI"
+    ldap_admin_pw: "test"
+  tasks:
+   - name: Install Samba working as an Active Directory Server and PDC
+     import_role: 
+        name: smbADserver
+```
 
 License
 -------
@@ -35,4 +55,4 @@ BSD
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+Implemented by José Ramón Méndez Reboredo. Please note that this is part of the materials for the subject AAS on the MSC on Computer Science (University of Vigo)
