@@ -90,33 +90,62 @@
    - "samba-tool domain passwordsettings set --min-pwd-length=6"
 
 - name: Improve compatibility with other services
-  lineinfile:
+  ini_file:
     path: /etc/samba/smb.conf
-    line: ldap server require strong auth = No
-    insertafter: "[global]"
-    insertbefore: "[.*]"
-  
+    section: global
+    option: "\tldap server require strong auth"
+    value: "No"
+
+# - name: Improve compatibility with other services
+#   lineinfile:
+#     path: /etc/samba/smb.conf
+#     line: "\tldap server require strong auth = No"
+#     insertbefore: "[netlogon]"
+
 - name: Masks on netlogon
-  lineinfile:
+  ini_file:
     path: /etc/samba/smb.conf
-    line: "{{ item }}"
-    insertafter: "[netlogon]"
-    insertbefore: "[.*]"
+    section: netlogon
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
   loop:
-    - create mask = 0700
-    - directory mask = 0644
+    - option: "\tcreate mask" 
+      value: "0700"
+    - option: "\tdirectory mask"
+      value: "0644"
+
+
+# - name: Masks on netlogon
+#   lineinfile:
+#     path: /etc/samba/smb.conf
+#     line: "{{ item }}"
+#     insertbefore: "[sysvol]"
+#   loop:
+#     - "\tcreate mask = 0700"
+#     - "\tdirectory mask = 0644"
 
 - name: Masks on sysvol
-  lineinfile:
+  ini_file:
     path: /etc/samba/smb.conf
-    line: "{{ item }}"
-    insertafter: "[sysvol]"
-    insertbefore: "[.*]"
+    section: sysvol
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
   loop:
-    - create mask = 0700
-    - directory mask = 0644
-  notify:
-    - restart samba
+    - option: "\tcreate mask" 
+      value: "0700"
+    - option: "\tdirectory mask"
+      value: "0644"
+
+# - name: Masks on sysvol
+#   lineinfile:
+#     path: /etc/samba/smb.conf
+#     line: "{{ item }}"
+#     insertafter: "[sysvol]"
+#   loop:
+#     - "\tcreate mask = 0700"
+#     - "\tdirectory mask = 0644"
+#   notify:
+#     - restart samba
 
 - name: Output the info
   debug: 
