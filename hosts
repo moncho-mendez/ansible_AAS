@@ -2,7 +2,7 @@
 smbADserver ansible_ssh_host=192.168.112.183 ansible_connection=ssh ansible_user=test ansible_become=yes ansible_become_method=sudo
 
 ldap_server ansible_ssh_host=192.168.112.181 ansible_connection=ssh ansible_user=test ansible_become=yes ansible_become_method=sudo
-ldap_client ansible_ssh_host=192.168.112.181 ansible_connection=ssh ansible_user=test ansible_become=yes ansible_become_method=sudo
+ldap_client ansible_ssh_host=192.168.112.182 ansible_connection=ssh ansible_user=test ansible_become=yes ansible_become_method=sudo
 
 
 
