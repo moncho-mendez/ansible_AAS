@@ -29,3 +29,10 @@
       enabled: True
       state: restarted
       masked: False
+
+- name: restart ntp
+  systemd:
+      name: "ntp.service"
+      enabled: True
+      state: restarted
+      masked: False

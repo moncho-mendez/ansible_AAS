@@ -33,8 +33,18 @@
 
 - name: Install samba packages
   apt:
-    name: ["samba", "winbind", "krb5-user", "krb5-config", "libpam-winbind", "libnss-winbind"]
+    name: ["samba", "winbind", "krb5-user", "krb5-config", "libpam-winbind", "libnss-winbind", "ntp"]
     state: present
+
+#configure NTP
+- name: Configure NTP
+  lineinfile:
+      path: /etc/ntp.conf
+      line: "broadcast {{net_bcast_address}}"
+      state: present
+  notify:
+    - restart ntp
+
 
 - name: Stop and disable Samba daemons
   systemd:
@@ -135,6 +145,8 @@
       value: "0700"
     - option: "\tdirectory mask"
       value: "0644"
+  notify:
+    - restart samba
 
 # - name: Masks on sysvol
 #   lineinfile:
