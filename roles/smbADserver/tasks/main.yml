@@ -47,7 +47,7 @@
     - nmbd.service 
     - winbind.service
 
-- name: Backup original Samba configuration
+- name: Backup original Samba and Kerberos 5 configuration
   shell: "mv {{ item.file }} {{ item.backup }}"
   args: 
       creates: "{{ item.backup }}"
@@ -82,7 +82,7 @@
       state: started
       masked: False
 
-#Eliminar si no se requiere explícitamente
+#Drop if not explicitly required
 - name: Disable password restrictions on samba
   shell: "{{ item }}"
   loop:
