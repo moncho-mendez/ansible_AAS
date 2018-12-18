@@ -29,7 +29,7 @@
   lineinfile:
     path: /etc/hosts
     state: present
-    line: "{{ ansible_default_ipv4.address }} {{ ldap_server_domain }}"
+    line: "{{ ansible_default_ipv4.address }} pdc.{{ ldap_server_domain }} PDC.{{ ldap_server_domain }} "
 
 - name: Install samba packages
   apt:
@@ -154,9 +154,12 @@
       this file is absolutelly necesary to access internal ldap server of samba. 
       In order to connect with a client to the internal ldapserver of samba, you should 
       use the follwoing configuration:
+        host: PDC.{{ ldap_server_domain }}
         base_dn: {{ ldap_base_dn }}
+        port: 636
         user: cn=Administrator,cn=Users,{{ ldap_organization_domain }}
         password: {{ ldap_admin_pw }}
+
       If you want to use standard command-line ldap tools (ldapsearch, ldapmodify...)
       you should include the following in your /etc/ldap config file:
         TLS_CACERT	<path where you copied /var/lib/samba/private/tls/ca.pem>
