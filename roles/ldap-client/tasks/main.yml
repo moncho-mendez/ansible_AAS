@@ -62,4 +62,7 @@
 
 - name: Inform
   debug:
-    msg: "Just start \"ssh -X -Y username@hostname jxplorer\" to run it"
+    msg: |
+      Just start \"ssh -X -Y username@hostname jxplorer\" to run it.
+      certificate problems can be detected using the following command
+        openssl s_client -connect {{ ldap_server_domain }}:636 -showcerts
