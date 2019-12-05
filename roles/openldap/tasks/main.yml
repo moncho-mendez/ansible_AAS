@@ -126,23 +126,43 @@
     - "{{ CA.clients[0].client_cert_file }}"
     - "{{ CA.clients[0].client_priv_key }}"
 
-# Task due to this error
-# https://github.com/ansible/ansible/issues/25665 
-# Should work but.....
-# - name: Configure OpenLDAP SSL support
-#   ldap_attr:
-#     dn: "cn=config"
-#     name: "{{ item.0 }}"
-#     values: "{{ item.1 }}"
-#     state: present
-#   with_together:
-#     - [ "olcTLSCertificateFile", "olcTLSCertificateKeyFile",  "olcTLSCACertificateFile" ]
-#     - [ "{{ CA.clients[0].client_cert_file }}", "{{ CA.clients[0].client_priv_key }}", "{{ CA.ca_cert_file }}" ]
+- name: Configure OpenLDAP SSL support (1)
+  file: 
+    path: "{{ files_dir }}"
+    owner: openldap
+    group: openldap
 
-- name: Configure OpenLDAP SSL support
-  shell: |
-     chown -R openldap.openldap {{ files_dir }}
-     echo -e "dn: cn=config\nadd: olcTLSCACertificateFile\nolcTLSCACertificateFile: {{ CA.ca_cert_file }}\n-\nadd: olcTLSCertificateFile\nolcTLSCertificateFile: {{ CA.clients[0].client_cert_file }}\n-\nadd: olcTLSCertificateKeyFile\nolcTLSCertificateKeyFile: {{ CA.clients[0].client_priv_key }}\n" | /usr/bin/ldapmodify -H ldapi:/// -Y EXTERNAL
+# Module ldap_attr fails due to this error
+# https://github.com/ansible/ansible/issues/25665 
+# Working using new module ldap_attrs on november 2019
+# - name: Configure OpenLDAP SSL support
+#   ldap_attrs:
+#     dn: "cn=config"
+#     attributes:
+#         olcTLSCertificateFile: "{{ CA.clients[0].client_cert_file }}"
+#         olcTLSCertificateKeyFile: "{{ CA.clients[0].client_priv_key }}"
+#         olcTLSCACertificateFile: "{{ CA.ca_cert_file }}" 
+#     state: exact
+
+# This should not be done by this method
+- name: Configure OpenLDAP SSL support (2)
+  copy:
+    content: |
+      dn: cn=config
+      add: olcTLSCACertificateFile
+      olcTLSCACertificateFile: {{ CA.ca_cert_file }}
+      -
+      add: olcTLSCertificateFile
+      olcTLSCertificateFile: {{ CA.clients[0].client_cert_file }}
+      -
+      add: olcTLSCertificateKeyFile
+      olcTLSCertificateKeyFile: {{ CA.clients[0].client_priv_key }}
+       
+    dest: /etc/ldap/ssl.cnf
+
+# This should not be done by this method
+- name: Configure OpenLDAP SSL support (3)
+  shell: cat /etc/ldap/ssl.cnf | /usr/bin/ldapmodify -H ldapi:/// -Y EXTERNAL
 
 - name: Enable SSL service on LDAP
   lineinfile:
