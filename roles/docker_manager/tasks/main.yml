@@ -28,4 +28,4 @@
 
 - name: Join to the swarm cluster as manager
   shell: "{{ hostvars['leader']['manager_cmd'] }}"
-  when: manager_cmd is not defined
+  when: "{{ hostvars['leader']['manager_cmd'] }}" is defined
