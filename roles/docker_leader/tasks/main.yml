@@ -28,9 +28,7 @@
   ignore_errors: yes
 
 - name: Initialize swarm
-  shell: docker swarm init && touch /root/swarminited
-  args:
-   creates: /root/swarminited
+  shell: "docker swarm init --advertise-address {{ advertise_address }}"
 
 - name: Capture join token for workers
   shell: docker swarm join-token worker | tail -3
