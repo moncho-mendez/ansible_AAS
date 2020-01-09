@@ -22,3 +22,8 @@
 # SOFTWARE.
 
 # handlers file for docker
+
+- name: Start Docker CE service
+  service:
+    name: docker-ce
+    state: started
