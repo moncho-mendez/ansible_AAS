@@ -3,7 +3,7 @@ Ansible playbooks and roles for AAS and SASO subjects (Advanced System Administr
 
 These ansible roles are part of the materials for the AAS (Advanced System Administration) and SASO (Security in Operating System Administration) subjects on the MSC on Computer Science Engineering (Máster en Ingeniería Informática) from Escuela Superior de Ingeniería Informática (University of Vigo).
 
-All of these ansible files works in Debian 10 (buster, stable). Therefore, you can run the Ansible playbooks using WSL on Windows 10 or Debian 10. All roles have been developed in ansible 2.8. In order to install the latest ansible 2.8 version you should run as root the following commands:
+All of these ansible files works in Debian 10 (buster, stable). Therefore, you can run the Ansible playbooks using WSL on Windows 10 or Debian 10. All roles have been developed in ansible 2.8. In order to install the latest ansible 2.10 version you should run as root the following commands:
 
 ```bash
 apt-get install python-pip3
@@ -24,6 +24,12 @@ test	ALL=(ALL:ALL) NOPASSWD:ALL
 Then from the ansible host you can install your ssh key using 
 ```
 ssh-copy-id test@<destination>
+```
+
+Some configurations of LDAP (OLC) has been made using ldap_attrs module from comunity.general collection. Please install this collection before use playbooks using one of the following forms.
+```
+ansible-galaxy collection install community.general
+ansible-galaxy install -r requeriments.yml
 ```
 
 This work includes roles to work with:

@@ -144,21 +144,23 @@
 #         olcTLSCACertificateFile: "{{ CA.ca_cert_file }}" 
 #     state: exact
 
-# This should not be done by this method
-- name: Configure OpenLDAP SSL support (2)
-  copy:
-    content: |
-      dn: cn=config
-      add: olcTLSCACertificateFile
-      olcTLSCACertificateFile: {{ CA.ca_cert_file }}
-      -
-      add: olcTLSCertificateFile
-      olcTLSCertificateFile: {{ CA.clients[0].client_cert_file }}
-      -
-      add: olcTLSCertificateKeyFile
-      olcTLSCertificateKeyFile: {{ CA.clients[0].client_priv_key }}
-       
-    dest: /etc/ldap/ssl.cnf
+# - name: Configure OpenLDAP SSL support
+#   shell: |
+#      chown -R openldap.openldap {{ files_dir }}
+#      echo -e "dn: cn=config\nadd: olcTLSCACertificateFile\nolcTLSCACertificateFile: {{ CA.ca_cert_file }}\n-\nadd: olcTLSCertificateFile\nolcTLSCertificateFile: {{ CA.clients[0].client_cert_file }}\n-\nadd: olcTLSCertificateKeyFile\nolcTLSCertificateKeyFile: {{ CA.clients[0].client_priv_key }}\n" | /usr/bin/ldapmodify -H ldapi:/// -Y EXTERNAL
+
+# https://docs.ansible.com/ansible/latest/collections/community/general/ldap_attrs_module.html
+# Enable it by installying:
+#    ansible-galaxy collection install community.general
+# 
+- name: Configure OpenLDAP SSL support
+  community.general.ldap_attrs:
+    dn: "cn=config"
+    attributes:
+       - olcTLSCertificateFile: "{{ CA.clients[0].client_cert_file }}"
+       - olcTLSCertificateKeyFile: "{{ CA.clients[0].client_priv_key }}"
+       - olcTLSCACertificateFile: "{{ CA.ca_cert_file }}"
+    state: exact
 
 # This should not be done by this method
 - name: Configure OpenLDAP SSL support (3)
