@@ -22,6 +22,8 @@
 # SOFTWARE.
 
 # tasks file for docker
+# Guide: https://docs.docker.com/engine/install/debian/
+
 - name: Remove previous docker installation
   apt:
     name: ['docker', 'docker-engine', 'docker.io']
@@ -45,7 +47,7 @@
 
 - name: Install Docker CE
   apt:
-    name: ['docker-ce', 'docker-compose']
+    name: ['docker-ce', 'docker-ce-cli', 'containerd.io', 'docker-compose']
     state: present
     update_cache: yes
   notify: Start Docker CE service
