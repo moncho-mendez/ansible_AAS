@@ -23,12 +23,12 @@
 
 # tasks file for CA
 
-- name: Install required software (Debian)
+- name: Install required software (Debian | Ubuntu)
   apt: 
-    name: python-openssl
+    name: python-openssl 
     state: present
     update_cache: yes
-  when: ansible_distribution=="Debian"
+  when: ansible_distribution=="Debian" or ansible_distribution=="Ubuntu"
 
 - name: Install required software (OSX)
   pip: 
@@ -37,11 +37,11 @@
   when: ansible_distribution=="MacOSX"
 
 - name: Generate a private key for CA
-  openssl_privatekey:
+  community.crypto.openssl_privatekey:
     path: "{{ CA.ca_priv_key }}"
 
 - name: Generate a Certificate request 
-  openssl_csr:
+  community.crypto.openssl_csr:
     path: "{{ CA.ca_csr_file }}"
     privatekey_path: "{{ CA.ca_priv_key }}"
     common_name: "{{ CA.ca_cn }}"
@@ -50,7 +50,7 @@
       - cRLSign
 
 - name: Generate the certificates
-  openssl_certificate:
+  community.crypto.x509_certificate:
     path: "{{ CA.ca_cert_file }}"
     privatekey_path: "{{ CA.ca_priv_key }}"
     csr_path: "{{ CA.ca_csr_file }}"
@@ -67,3 +67,23 @@
     client_cert_file: "{{ item.client_cert_file }}"
     client_csr_file: "{{ item.client_csr_file }}"
     client_priv_key: "{{ item.client_priv_key }}"
+
+#Fix permissions to ensure certificates can be copied 
+#to servers
+- name: Change permissions in certificate folders
+  file: 
+    path: "{{ item }}"
+    mode: "755"
+  loop:
+    - "{{ files_dir }}"
+    - "{{ CA.ca_cert_file | dirname }}"
+    - "{{ CA.clients[0].client_cert_file | dirname }}"
+
+- name: Change permissions in certificate folders
+  file: 
+    path: "{{ item }}"
+    mode: "644"
+  loop:
+    - "{{ CA.clients[0].client_priv_key }}"
+    - "{{ CA.clients[0].client_cert_file }}"
+  

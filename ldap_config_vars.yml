@@ -22,7 +22,7 @@
 # SOFTWARE.
 
 ldap_server_ip: "{{ hostvars['ldap_server'].ansible_ssh_host }}"
-net_bcast_address: {{ ldap_server_ip | ipaddr('broadcast') }} #please pip install netaddr 
+net_bcast_address: "{{ ldap_server_ip | ipaddr('broadcast') }}" #please pip install netaddr 
 ldap_server_domain: "ldap.esei.uvigo.es"
 ldap_organization_domain: "esei.uvigo.es"
 ldap_base_dn: "{{ ldap_organization_domain | replace('.', ',dc=') | regex_replace('^', 'dc=')  }}"
