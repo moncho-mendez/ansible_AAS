@@ -45,7 +45,7 @@
   - "URI ldaps://{{ ldap_server_domain }}"
 
 - name: Import SSL certificate from our CA to Java cacerts keystore
-  java_cert:
+  community.general.java_cert:
     cert_path: "{{ CA.ca_cert_file }}"
     keystore_path: /etc/ssl/certs/java/cacerts #default on Debian
     keystore_pass: changeit
@@ -53,7 +53,7 @@
     state: absent
 
 - name: Import SSL certificate from our CA to Java cacerts keystore
-  java_cert:
+  community.general.java_cert:
     cert_path: "{{ CA.ca_cert_file }}"
     keystore_path: /etc/ssl/certs/java/cacerts #default on Debian
     keystore_pass: changeit
