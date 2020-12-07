@@ -45,9 +45,13 @@
     path: "{{ CA.ca_csr_file }}"
     privatekey_path: "{{ CA.ca_priv_key }}"
     common_name: "{{ CA.ca_cn }}"
-    key_usage: 
+    basic_constraints: 
+      - CA:TRUE
+      - pathlen:1
+    key_usage:
       - keyCertSign
       - cRLSign
+      - digitalSignature
 
 - name: Generate the certificates
   community.crypto.x509_certificate:
