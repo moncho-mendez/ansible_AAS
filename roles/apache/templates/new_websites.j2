@@ -1,0 +1,20 @@
+NameVirtualHost *:80
+
+{% for key, value in websites.items() %}
+<VirtualHost *:80>  
+   ServerName {{ value.server_name }}  
+   DocumentRoot {{ value.directory }}
+
+   {% if value.serveradmin is defined %}  
+        ServerAdmin {{ value.serveradmin }}
+   {% endif %} 
+
+   <Directory "{{ value.directory }}">    
+        AllowOverride All    
+        Options FollowSymLinks    
+        Order allow,deny    
+        Allow from all  
+   </Directory>
+   
+</VirtualHost>
+{% endfor %}

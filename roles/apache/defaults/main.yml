@@ -1,0 +1,10 @@
+---
+# defaults file for apache
+# The websites to configure in /var/www/
+websites:
+  site1:
+    directory: /var/www/site1
+    server_name: www.site1.com
+    index_file: /var/www/site1/index.php
+    template_index_file: index.php.j2
+    admin: moncho.mendez@esei.uvigo.es

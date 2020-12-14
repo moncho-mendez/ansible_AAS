@@ -1,0 +1,98 @@
+---
+# tasks file for apache
+# Install packages using the apt module
+- name: Install apache packages
+  apt:
+    name: "{{ packages }}"
+    state: present
+  vars:
+    packages:
+      - apache2
+      - libapache2-mod-php7.3
+      - php7.3-mysql
+  tags:
+    - apache
+    - apache_packages
+
+# Loop to enable apache2 modules using the community.general collection
+- name: enable apache2 modules
+  community.general.apache2_module:
+    name: "{{ curr_module }}"
+    state: present
+  loop: "{{ modules_to_enable }}"
+  loop_control:
+    loop_var: curr_module
+  vars:
+    modules_to_enable:
+      - php7.3
+  tags:
+    - apache
+    - apache_modules
+
+# Loop through dictionary 'websites' to create the requested directories for websites
+- name: Create directories for websites
+  file:
+    path: "{{ item.value.directory }}"
+    state: "directory"
+    mode: "755"
+  loop: "{{  lookup('dict', websites, wantlist=True) }}"
+  tags:
+    - apache
+    - apache_websites
+
+# Loop through dictionary 'websites' to install the requested websites
+- name: Install website files
+  template:
+    src: "{{ item.value.template_index_file }}"
+    dest: "{{ item.value.index_file }}"
+  loop: "{{  lookup('dict', websites, wantlist=True) }}"
+  tags:
+    - apache
+    - apache_websites
+
+
+# Add new websits to apache2 using the template module
+- name: Create websites configurations
+  template:
+    src: new_websites.j2
+    dest: /etc/apache2/sites-available/new_websites.conf
+  tags:
+    - apache
+    - apache_websites
+
+
+# Disable the old sites created by default using a2dissite module
+- name: Disable old sites
+  shell: "a2dissite {{ item }}"
+  loop:
+    - 000-default
+    - default-ssl
+  tags:
+    - apache
+    - apache_websites
+    - apache_new_websites
+
+# Enable new sites using the module a2ensite
+- name: Enable new sites
+  shell: a2ensite new_websites
+  tags:
+    - apache
+    - apache_websites
+    - apache_new_websites
+
+# Restart mysql and apache2 services using service module
+- name: Restart apache service
+  service:
+    name: "{{ curr_service }}"
+    state: "restarted"
+  loop: "{{ services_to_restart }}"
+  loop_control:
+    loop_var: curr_service
+  vars:
+    services_to_restart:
+      - apache2
+  tags:
+    - apache
+    - apache_modules
+    - apache_websites
+    - apache_packages

@@ -1,0 +1,77 @@
+---
+# tasks file for mariadb
+# Install packages using the apt module
+- name: Install packages
+  apt:
+    name: "{{ packages }}"
+    state: present
+  vars:
+    packages:
+      - mariadb-server-10.3
+      - python-pip
+  tags: 
+    - mysql
+    - mysql_packages
+# Install packages using the pip module
+- name: Install PIP MySQL module (PyMySQL)
+  pip:
+    name: "PyMySQL"
+    state: "present"
+  tags: 
+    - mysql
+    - mysql_packages
+# User configuration of MySQL using the community.mysql collection
+- name: Create users in MySQL and grant privileges
+  community.mysql.mysql_user:
+      login_unix_socket: "{{ mysql_unix_socket }}"
+      login_user: "{{ mysql_root_user }}"
+      login_password: "{{ mysql_root_password }}"
+      user: "{{ curr_user.key }}"
+      password: "{{ curr_user.value.password }}"
+      state: "present"
+      append_privs: "yes"
+      priv: "{{ curr_user.value.privs }}"
+      host: "{{ curr_user.value.host }}"
+  loop: "{{ lookup('dict', mysql_new_users, wantlist=True) }}"
+  loop_control:
+    loop_var: curr_user
+  tags: 
+    - mysql
+    - mysql_users
+
+# Ensure bind-address value is 127.0.0.1 using lineinfile module
+- name: Find and replace the bind-address value
+  lineinfile: 
+    path: /etc/mysql/mariadb.conf.d/50-server.cnf
+    line: bind-address=127.0.0.1
+    regex: "^[[:space:]]*bind-address[[:space:]]*="
+    state: present
+  tags:
+    - mysql
+    - mysql_config
+# Ensure skip_networkin is disabled in mariadb 
+- name: Configure mysql (do not skip-networking)
+  lineinfile: 
+    path: /etc/mysql/mariadb.conf.d/50-server.cnf
+    line: "skip-networking"
+    regex: "^[[:space:]]*skip-networking[[:space:]]*"
+    state: absent 
+  tags:
+    - mysql
+    - mysql_config
+# Restart mysql and apache2 services using service module
+- name: Restart services
+  service:
+    name: "{{ curr_service }}"
+    state: "restarted"
+  loop: "{{ services_to_restart }}"
+  loop_control:
+    loop_var: curr_service
+  vars:
+    services_to_restart:
+      - mysql
+  tags: 
+    - mysql
+    - mysql_users
+    - mysql_packages
+    - mysql_config

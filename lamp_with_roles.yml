@@ -1,0 +1,64 @@
+---
+  # MIT License
+  
+  # Copyright (c) 2018 
+  
+  # Permission is hereby granted, free of charge, to any person obtaining a copy
+  # of this software and associated documentation files (the "Software"), to deal
+  # in the Software without restriction, including without limitation the rights
+  # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  # copies of the Software, and to permit persons to whom the Software is
+  # furnished to do so, subject to the following conditions:
+  
+  # The above copyright notice and this permission notice shall be included in all
+  # copies or substantial portions of the Software.
+  
+  # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  # SOFTWARE.
+
+- hosts: ejemplo1
+  tasks:
+    - name: Load vault values
+      include_vars: vault.yml
+      tags:
+        - mysql
+        - mysql_users
+        - mysql_packages
+        - mysql_config
+
+    - name: Install apache
+      import_role: 
+        name: apache
+      vars: # Variables that the role will receive
+        websites:
+          site1:
+            directory: /var/www/site1
+            server_name: www.site1.com
+            index_file: /var/www/site1/index.php
+            template_index_file: index.php.j2
+            admin: moncho.mendez@esei.uvigo.es
+
+    - name: Install mysql
+      import_role: 
+        name: mariadb
+      vars: # Variables that the role will receive
+          #The root user for MySQL
+          mysql_root_user: "root"
+          # The password for MySQL root
+          mysql_root_password: "{{ vault_mysql_passwd }}"
+          # The host where users will be created
+          mysql_unix_socket: "/var/run/mysqld/mysqld.sock"
+          # The mariadb configuration
+          mariadb_conf_file:  /etc/mysql/mariadb.conf.d/50-server.cnf
+          mariadb_address: "127.0.0.1"
+          #The users to be created
+          mysql_new_users: 
+            myuser: 
+              password: "{{ vault_mysql_myuser_passwd }}"
+              privs: "*.*:ALL "
+              host: "%"

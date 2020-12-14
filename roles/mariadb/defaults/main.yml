@@ -1,0 +1,12 @@
+---
+# defaults file for mariadb
+
+#The root user for MySQL
+mysql_root_user: "root" 
+
+#The host where users will be created
+mysql_unix_socket: "/var/run/mysqld/mysqld.sock" 
+
+# The mariadb configuration
+mariadb_conf_file:  /etc/mysql/mariadb.conf.d/50-server.cnf
+mariadb_address: "127.0.0.1"

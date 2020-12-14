@@ -1,0 +1,119 @@
+---
+    # MIT License
+    
+    # Copyright (c) 2018 
+    
+    # Permission is hereby granted, free of charge, to any person obtaining a copy
+    # of this software and associated documentation files (the "Software"), to deal
+    # in the Software without restriction, including without limitation the rights
+    # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    # copies of the Software, and to permit persons to whom the Software is
+    # furnished to do so, subject to the following conditions:
+    
+    # The above copyright notice and this permission notice shall be included in all
+    # copies or substantial portions of the Software.
+    
+    # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    # SOFTWARE.
+
+- hosts: ldap_server
+  tasks: 
+    - name: Load vault values
+      include_vars: vault.yml
+
+    - name: Load variables
+      include_vars: ldap_config_vars.yml
+
+    # tasks file for apache
+    # Install packages using the apt module
+    - name: Install apache packages
+      apt:
+        name: "{{ packages }}"
+        state: present
+      vars:
+        packages:
+          - apache2
+          - libapache2-mod-php7.3
+          - php7.3-ldap
+          - libsasl2-modules-ldap
+          - php-auth-sasl
+
+    # Loop to enable apache2 modules using the community.general collection
+    - name: enable apache2 modules
+      community.general.apache2_module:
+        name: "{{ curr_module }}"
+        state: present
+      loop: "{{ modules_to_enable }}"
+      loop_control:
+        loop_var: curr_module
+      vars:
+        modules_to_enable:
+           - php7.3
+
+    - name: copy passwd utility
+      template:
+          dest: /var/www/html/index.php
+          src: ldap.php.j2
+          mode: 644
+          group: users
+          owner: user
+          
+    - name: Install packages
+      apt:
+        name: ldap-utils
+        state: present
+        
+    - name: Create directories to store certificates and keys
+      file:
+        path: "{{ item }}"
+        group: "root"
+        state: "directory"
+        mode: "755"
+        owner: "root"
+      loop:
+        - "{{ files_dir }}"
+        - "{{ CA.ca_cert_file | dirname }}"
+
+    - name: copy neccesary certificates and keys
+      copy:
+        dest: "{{ item }}"
+        src: "{{ item }}"
+        mode: "644"
+        owner: "root"
+        group: "root"
+      loop:
+        - "{{ CA.ca_cert_file }}"
+    
+    - name: Configure this host as ldap client
+      lineinfile:
+        path: /etc/hosts
+        state: present
+        line: "{{ ldap_server_ip }} {{ ldap_server_domain }}"
+    
+    - name: Configure ldap client
+      lineinfile:
+        path: /etc/ldap/ldap.conf
+        state: present
+        line: "{{ item }}"
+      loop:
+        - "TLS_CACERT {{ CA.ca_cert_file }}"
+        - "TLS_REQ_CERT never"
+        - "BASE {{ ldap_base_dn }}"
+        - "URI ldaps://{{ ldap_server_domain }}"
+
+    - name: Configure ldap client
+      service:
+          name: apache2
+          state: restarted
+
+    - name: Inform
+      debug:
+        msg: "Use http://{{ ldap_server_domain }}/index.php to change your passwd"
+    - name: Inform 2
+      debug:
+        msg: "Or http://{{ ldap_server_ip }}/index.php to change your passwd"

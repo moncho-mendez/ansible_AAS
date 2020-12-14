@@ -113,7 +113,7 @@
 #     insertbefore: "[netlogon]"
 
 - name: Masks on netlogon
-  ini_file:
+  community.general.ini_file:
     path: /etc/samba/smb.conf
     section: netlogon
     option: "{{ item.option }}"
@@ -135,7 +135,7 @@
 #     - "\tdirectory mask = 0644"
 
 - name: Masks on sysvol
-  ini_file:
+  community.general.ini_file:
     path: /etc/samba/smb.conf
     section: sysvol
     option: "{{ item.option }}"

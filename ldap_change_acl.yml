@@ -29,17 +29,18 @@
         attributes:
             olcAccess:
                 - >- # This is the default {0} ACL
-                    {0}to attrs=userPassword,shadowLastChange
+                    {0}to attrs=userPassword
                     by self write
                     by anonymous auth
                     by * none
+                - >- # This is the default {1} ACL
+                    {1}to attrs=shadowLastChange
+                    by self write
+                    by * read
                 - >- # This ensures homePhone, mobile and other attributes can only be accesed by owner
-                    {1}to attrs=homePhone,mobile,mail,postalAddress,postalCode,st,street,telephoneNumber
+                    {2}to attrs=homePhone,mobile,mail,postalAddress,postalCode,st,street,telephoneNumber
                     by self write
                     by * none
-                - >- # This is the default {1} ACL
-                    {2}to dn.base=""
-                    by * read
                 - >- # This is the default {2} ACL
                     {3}to *
                     by * read
