@@ -24,13 +24,13 @@
 - hosts: localhost
   tasks:
     - name: Load vault values
-      include_vars: vault.yml
+      ansible.builtin.include_vars: vault.yml
 
     - name: Load variables
-      include_vars: ldap_config_vars.yml
+      ansible.builtin.include_vars: ldap_config_vars.yml
 
     - name: Create directories
-      file:
+      ansible.builtin.file:
         path: "{{ item }}"
         state: "directory"
         mode: "750"
@@ -41,7 +41,7 @@
         - "{{ CA.clients[0].client_cert_file | dirname }}"
 
     - name: Generate certificates
-      import_role: 
+      ansible.builtin.import_role: 
         name: CA
 
 - hosts: ldap_server
@@ -49,7 +49,7 @@
     - ldap_config_vars.yml
   tasks:
    - name: Install Open LDAP
-     import_role: 
+      ansible.builtin.import_role: 
         name: openldap
 
   

@@ -24,14 +24,14 @@
 # tasks file for CA
 
 - name: Install required software (Debian | Ubuntu)
-  apt: 
+  ansible.builtin.apt: 
     name: python-openssl 
     state: present
     update_cache: yes
   when: ansible_distribution=="Debian" or ansible_distribution=="Ubuntu"
 
 - name: Install required software (OSX)
-  pip: 
+  ansible.builtin.pip: 
     name: pyOpenSSL
     state: present
   when: ansible_distribution=="MacOSX"
@@ -64,7 +64,7 @@
     provider: selfsigned
 
 - name: Generate clients
-  include_tasks: client.yml
+  ansible.builtin.include_tasks: client.yml
   loop: "{{ CA.clients }}"
   vars:
     client_cn: "{{ item.client_cn }}"
@@ -75,7 +75,7 @@
 #Fix permissions to ensure certificates can be copied 
 #to servers
 - name: Change permissions in certificate folders
-  file: 
+  ansible.builtin.file: 
     path: "{{ item }}"
     mode: "755"
   loop:
@@ -84,7 +84,7 @@
     - "{{ CA.clients[0].client_cert_file | dirname }}"
 
 - name: Change permissions in certificate folders
-  file: 
+  ansible.builtin.file: 
     path: "{{ item }}"
     mode: "644"
   loop:

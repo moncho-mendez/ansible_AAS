@@ -2,7 +2,7 @@
 # tasks file for apache
 # Install packages using the apt module
 - name: Install apache packages
-  apt:
+  ansible.builtin.apt:
     name: "{{ packages }}"
     state: present
   vars:
@@ -31,7 +31,7 @@
 
 # Loop through dictionary 'websites' to create the requested directories for websites
 - name: Create directories for websites
-  file:
+  ansible.builtin.file:
     path: "{{ item.value.directory }}"
     state: "directory"
     mode: "755"
@@ -42,7 +42,7 @@
 
 # Loop through dictionary 'websites' to install the requested websites
 - name: Install website files
-  template:
+  ansible.builtin.template:
     src: "{{ item.value.template_index_file }}"
     dest: "{{ item.value.index_file }}"
   loop: "{{  lookup('dict', websites, wantlist=True) }}"
@@ -53,7 +53,7 @@
 
 # Add new websits to apache2 using the template module
 - name: Create websites configurations
-  template:
+  ansible.builtin.template:
     src: new_websites.j2
     dest: /etc/apache2/sites-available/new_websites.conf
   tags:
@@ -63,7 +63,7 @@
 
 # Disable the old sites created by default using a2dissite module
 - name: Disable old sites
-  shell: "a2dissite {{ item }}"
+  ansible.builtin.shell: "a2dissite {{ item }}"
   loop:
     - 000-default
     - default-ssl
@@ -74,7 +74,7 @@
 
 # Enable new sites using the module a2ensite
 - name: Enable new sites
-  shell: a2ensite new_websites
+  ansible.builtin.shell: a2ensite new_websites
   tags:
     - apache
     - apache_websites
@@ -82,7 +82,7 @@
 
 # Restart mysql and apache2 services using service module
 - name: Restart apache service
-  service:
+  ansible.builtin.service:
     name: "{{ curr_service }}"
     state: "restarted"
   loop: "{{ services_to_restart }}"

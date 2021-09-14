@@ -23,13 +23,13 @@
 - hosts: smbADserver
   tasks:
     - name: Load vault values
-      include_vars: vault.yml
+      ansible.builtin.include_vars: vault.yml
 
     - name: Load variables
-      include_vars: ldap_config_vars.yml
+      ansible.builtin.include_vars: ldap_config_vars.yml
 
     - name: Install Samba working as an Active Directory Server and PDC
-      import_role: 
+      ansible.builtin.import_role: 
         name: smbADserver
 
   

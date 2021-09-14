@@ -2,12 +2,12 @@
 # tasks file for ldap-client
 
 - name: Install client software
-  apt:
+  ansible.builtin.apt:
     name: ["ldap-utils", "jxplorer", "x11-xserver-utils"]
     state: present
 
 - name: Create directories to store certificates and keys
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     group: "root"
     state: "directory"
@@ -18,7 +18,7 @@
     - "{{ CA.ca_cert_file | dirname }}"
 
 - name: copy neccesary certificates and keys
-  copy:
+  ansible.builtin.copy:
     dest: "{{ item }}"
     src: "{{ item }}"
     mode: "644"
@@ -28,13 +28,13 @@
     - "{{ CA.ca_cert_file }}"
 
 - name: Configure this host as ldap client
-  lineinfile:
+  ansible.builtin.lineinfile:
       path: /etc/hosts
       state: present
       line: "{{ ldap_server_ip }} {{ ldap_server_domain }}"
 
 - name: Configure ldap client
-  lineinfile:
+  ansible.builtin.lineinfile:
       path: /etc/ldap/ldap.conf
       state: present
       line: "{{ item }}"
@@ -61,7 +61,7 @@
     state: present
 
 - name: Inform
-  debug:
+  ansible.builtin.debug:
     msg: |
       Just start \"ssh -X -Y username@hostname jxplorer\" to run it.
       certificate problems can be detected using the following command

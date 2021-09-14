@@ -24,12 +24,12 @@
 # tasks file for pam-ldap-client
 
 - name: Install packages
-  apt:
+  ansible.builtin.apt:
     name: ldap-utils
     state: present
 
 - name: Create directories to store certificates and keys
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     group: "root"
     state: "directory"
@@ -40,7 +40,7 @@
     - "{{ CA.ca_cert_file | dirname }}"
 
 - name: copy neccesary certificates and keys
-  copy:
+  ansible.builtin.copy:
     dest: "{{ item }}"
     src: "{{ item }}"
     mode: "644"
@@ -50,13 +50,13 @@
     - "{{ CA.ca_cert_file }}"
 
 - name: Configure this host as ldap client
-  lineinfile:
+  ansible.builtin.lineinfile:
       path: /etc/hosts
       state: present
       line: "{{ ldap_server_ip }} {{ ldap_server_domain }}"
 
 - name: Configure ldap client
-  lineinfile:
+  ansible.builtin.lineinfile:
       path: /etc/ldap/ldap.conf
       state: present
       line: "{{ item }}"
@@ -121,7 +121,7 @@
 #   description: "LDAP root account password:"
 
 - name: Preconfigure package libnss-ldap
-  debconf:
+  ansible.builtin.debconf:
       name: libnss-ldap 
       value: "{{ item.value }}"
       vtype: "{{ item.type }}"
@@ -178,7 +178,7 @@
 
 # To see questions do the same that was done for the previous one
 - name: Preconfigure package libpam-ldap
-  debconf:
+  ansible.builtin.debconf:
       name: libpam-ldap 
       value: "{{ item.value }}"
       vtype: "{{ item.type }}"
@@ -230,12 +230,12 @@
     description: "Manage libpam-ldap configuration automatically?"
 
 - name: Install packages
-  apt:
+  ansible.builtin.apt:
     name: ["libnss-ldap", "libpam-ldap"]
     state: present
 
 - name: configure nsswitch-ldap
-  lineinfile:
+  ansible.builtin.lineinfile:
       path: "/etc/nsswitch.conf"
       regexp: "{{ item.regexp }}"
       line: "{{ item.line }}"
@@ -257,7 +257,7 @@
 
 # see https://docs.cumulusnetworks.com/download/attachments/8362556/kb_debconf.txt?version=1&modificationDate=1537401093000&api=v2
 - name: Reconfigure package libpam-runtime
-  debconf:
+  ansible.builtin.debconf:
       name: libpam-runtime
       value: "{{ item.value }}"
       vtype: "{{ item.type }}"
@@ -285,10 +285,10 @@
     description: "No PAM profiles have been selected."
 
 - name: Invoke dpkg-reconfigure to reconfigure libpam-runtime
-  shell: dpkg-reconfigure  --frontend noninteractive  libpam-runtime
+  ansible.builtin.shell: dpkg-reconfigure  --frontend noninteractive  libpam-runtime
 
 - name: ensure mkhomedir module is present in /etc/pam.d/common-session
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/pam.d/{{ item }}
     line: session optional pam_mkhomedir.so skel=/etc/skel umask=077
     regexp: ^session\s+required\s+pam_mkhomedir.so.*$

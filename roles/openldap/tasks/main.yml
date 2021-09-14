@@ -23,14 +23,14 @@
 
 # tasks file for openldap
 - name: Install remotelly debconf
-  apt: 
+  ansible.builtin.apt: 
     update_cache: yes
     name: debconf 
     install_recommends: yes
     state: present
 
 - name: Configure ldap properties
-  debconf:
+  ansible.builtin.debconf:
     name: slapd
     value: "{{ item.value }}"
     vtype: "{{ item.vtype }}"
@@ -89,12 +89,12 @@
       value: abort installation
 
 - name: Install ldap server
-  apt:
+  ansible.builtin.apt:
     name: ["slapd", "ldap-utils", "python-ldap"]
     state: present
 
 - name: Create directories to store certificates and keys
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     group: "openldap"
     state: "directory"
@@ -106,7 +106,7 @@
     - "{{ CA.clients[0].client_cert_file | dirname }}"
 
 - name: copy neccesary certificates and keys (I)
-  copy:
+  ansible.builtin.copy:
     dest: "{{ item }}"
     src: "{{ item }}"
     mode: "644"
@@ -116,7 +116,7 @@
     - "{{ CA.ca_cert_file }}"
 
 - name: copy neccesary certificates and keys (II)
-  copy:
+  ansible.builtin.copy:
     dest: "{{ item }}"
     src: "{{ item }}"
     mode: "640"
@@ -127,7 +127,7 @@
     - "{{ CA.clients[0].client_priv_key }}"
 
 - name: Configure OpenLDAP SSL support (1)
-  file: 
+  ansible.builtin.file: 
     path: "{{ files_dir }}"
     owner: openldap
     group: openldap
@@ -149,24 +149,24 @@
 
 
 - name: Enable SSL service on LDAP
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/default/slapd
     regexp: '^SLAPD_SERVICES='
     line: SLAPD_SERVICES="ldap:/// ldapi:/// ldaps:///"
 
 - name: Restart slapd service (OpenLDAP)
-  service:
+  ansible.builtin.service:
     name: slapd
     state: restarted
 
 - name: Configure ldap client
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/hosts
     state: present
     line: "{{ ansible_default_ipv4.address }} {{ ldap_server_domain }}"
 
 - name: Configure ldap client
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/ldap/ldap.conf
     state: present
     line: "{{ item }}"

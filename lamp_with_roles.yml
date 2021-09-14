@@ -24,7 +24,7 @@
 - hosts: ejemplo1
   tasks:
     - name: Load vault values
-      include_vars: vault.yml
+      ansible.builtin.include_vars: vault.yml
       tags:
         - mysql
         - mysql_users
@@ -32,7 +32,7 @@
         - mysql_config
 
     - name: Install apache
-      import_role: 
+      ansible.builtin.import_role: 
         name: apache
       vars: # Variables that the role will receive
         websites:
@@ -44,7 +44,7 @@
             admin: moncho.mendez@esei.uvigo.es
 
     - name: Install mysql
-      import_role: 
+      ansible.builtin.import_role: 
         name: mariadb
       vars: # Variables that the role will receive
           #The root user for MySQL

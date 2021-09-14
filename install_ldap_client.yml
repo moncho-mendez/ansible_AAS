@@ -27,5 +27,5 @@
     - ldap_config_vars.yml
   tasks:
    - name: Install Open LDAP
-     include_role: 
+     ansible.builtin.include_role: 
         name: ldap-client

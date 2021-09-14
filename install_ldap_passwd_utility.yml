@@ -24,15 +24,15 @@
 - hosts: ldap_server
   tasks: 
     - name: Load vault values
-      include_vars: vault.yml
+      ansible.builtin.include_vars: vault.yml
 
     - name: Load variables
-      include_vars: ldap_config_vars.yml
+      ansible.builtin.include_vars: ldap_config_vars.yml
 
     # tasks file for apache
     # Install packages using the apt module
     - name: Install apache packages
-      apt:
+      ansible.builtin.apt:
         name: "{{ packages }}"
         state: present
       vars:
@@ -56,7 +56,7 @@
            - php7.3
 
     - name: copy passwd utility
-      template:
+      ansible.builtin.template:
           dest: /var/www/html/index.php
           src: ldap.php.j2
           mode: 644
@@ -64,12 +64,12 @@
           owner: user
           
     - name: Install packages
-      apt:
+      ansible.builtin.apt:
         name: ldap-utils
         state: present
         
     - name: Create directories to store certificates and keys
-      file:
+      ansible.builtin.file:
         path: "{{ item }}"
         group: "root"
         state: "directory"
@@ -80,7 +80,7 @@
         - "{{ CA.ca_cert_file | dirname }}"
 
     - name: copy neccesary certificates and keys
-      copy:
+      ansible.builtin.copy:
         dest: "{{ item }}"
         src: "{{ item }}"
         mode: "644"
@@ -90,13 +90,13 @@
         - "{{ CA.ca_cert_file }}"
     
     - name: Configure this host as ldap client
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/hosts
         state: present
         line: "{{ ldap_server_ip }} {{ ldap_server_domain }}"
     
     - name: Configure ldap client
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/ldap/ldap.conf
         state: present
         line: "{{ item }}"
@@ -107,13 +107,13 @@
         - "URI ldaps://{{ ldap_server_domain }}"
 
     - name: Configure ldap client
-      service:
+      ansible.builtin.service:
           name: apache2
           state: restarted
 
     - name: Inform
-      debug:
+      ansible.builtin.debug:
         msg: "Use http://{{ ldap_server_domain }}/index.php to change your passwd"
     - name: Inform 2
-      debug:
+      ansible.builtin.debug:
         msg: "Or http://{{ ldap_server_ip }}/index.php to change your passwd"

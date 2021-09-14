@@ -23,9 +23,9 @@
 
 # tasks file for worker
 - name: Leave the swarm cluster if required
-  shell: "docker swarm leave --force"
+  ansible.builtin.shell: "docker swarm leave --force"
   ignore_errors: yes
 
 - name: Join to the swarm cluster as manager
-  shell: "{{ hostvars['leader']['worker_cmd'] }}"
+  ansible.builtin.shell: "{{ hostvars['leader']['worker_cmd'] }}"
   when: "{{ hostvars['leader']['worker_cmd'] }}" is defined

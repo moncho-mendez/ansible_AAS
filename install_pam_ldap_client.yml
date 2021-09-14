@@ -24,12 +24,12 @@
 - hosts: pam_ldap_clients
   gather_facts: yes
   tasks:
-   - name: Load vault values
-     include_vars: vault.yml
+    - name: Load vault values
+      ansible.builtin.include_vars: vault.yml
 
-   - name: Load variables
-     include_vars: ldap_config_vars.yml
+    - name: Load variables
+      ansible.builtin.include_vars: ldap_config_vars.yml
 
-   - name: Install and pam support for LDAP
-     include_role: 
+    - name: Install and pam support for LDAP
+      ansible.builtin.include_role: 
         name: pam-ldap-client

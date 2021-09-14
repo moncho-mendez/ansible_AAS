@@ -3,6 +3,6 @@
 - hosts: ejemplo1
   tasks:
     - name: Install docker on ejemplo1 host 
-      include_role:
+      ansible.builtin.include_role:
         name: docker
         

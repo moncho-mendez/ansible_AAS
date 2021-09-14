@@ -24,22 +24,22 @@
 # tasks file for leader
 
 - name: Leave the swarm cluster if required
-  shell: "docker swarm leave --force"
+  ansible.builtin.shell: "docker swarm leave --force"
   ignore_errors: yes
 
 - name: Initialize swarm
-  shell: "docker swarm init --advertise-address {{ advertise_address }}"
+  ansible.builtin.shell: "docker swarm init --advertise-address {{ advertise_address }}"
 
 - name: Capture join token for workers
-  shell: docker swarm join-token worker | tail -3
+  ansible.builtin.shell: docker swarm join-token worker | tail -3
   register: worker_cmd_output
 
 - name: Capture join token for managers
-  shell: docker swarm join-token manager | tail -3
+  ansible.builtin.shell: docker swarm join-token manager | tail -3
   register: manager_cmd_output
 
 - name: set fact for worker_cmd
-  set_fact: worker_cmd="{{ worker_cmd_output.stdout }}"
+  ansible.builtin.set_fact: worker_cmd="{{ worker_cmd_output.stdout }}"
 
 - name: set fact for manager_cmd
-  set_fact: manager_cmd="{{ manager_cmd_output.stdout }}"
+  ansible.builtin.set_fact: manager_cmd="{{ manager_cmd_output.stdout }}"

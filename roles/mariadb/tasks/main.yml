@@ -2,7 +2,7 @@
 # tasks file for mariadb
 # Install packages using the apt module
 - name: Install packages
-  apt:
+  ansible.builtin.apt:
     name: "{{ packages }}"
     state: present
   vars:
@@ -14,7 +14,7 @@
     - mysql_packages
 # Install packages using the pip module
 - name: Install PIP MySQL module (PyMySQL)
-  pip:
+  ansible.builtin.pip:
     name: "PyMySQL"
     state: "present"
   tags: 
@@ -41,7 +41,7 @@
 
 # Ensure bind-address value is 127.0.0.1 using lineinfile module
 - name: Find and replace the bind-address value
-  lineinfile: 
+  ansible.builtin.lineinfile: 
     path: /etc/mysql/mariadb.conf.d/50-server.cnf
     line: bind-address=127.0.0.1
     regex: "^[[:space:]]*bind-address[[:space:]]*="
@@ -51,7 +51,7 @@
     - mysql_config
 # Ensure skip_networkin is disabled in mariadb 
 - name: Configure mysql (do not skip-networking)
-  lineinfile: 
+  ansible.builtin.lineinfile: 
     path: /etc/mysql/mariadb.conf.d/50-server.cnf
     line: "skip-networking"
     regex: "^[[:space:]]*skip-networking[[:space:]]*"
@@ -61,7 +61,7 @@
     - mysql_config
 # Restart mysql and apache2 services using service module
 - name: Restart services
-  service:
+  ansible.builtin.service:
     name: "{{ curr_service }}"
     state: "restarted"
   loop: "{{ services_to_restart }}"
