@@ -3,13 +3,13 @@ Ansible playbooks and roles for AAS and SASO subjects (Advanced System Administr
 
 These ansible roles are part of the materials for the AAS (Advanced System Administration) and SASO (Security in Operating System Administration) subjects on the MSC on Computer Science Engineering (Máster en Ingeniería Informática) from Escuela Superior de Ingeniería Informática (University of Vigo).
 
-All of these ansible files works in Debian 10 (buster, stable). Therefore, you can run the Ansible playbooks using WSL on Windows 10 or Debian 11. All roles are compatible with ansible 2.11.5. In order to install the latest ansible 2.11.5 version you should run as root the following commands:
+All of these ansible files works in Debian 11 (bullseye, stable). Therefore, you can run the Ansible playbooks using WSL on Windows 10 or Debian 11. All roles are compatible with ansible 2.11.5. In order to install the latest ansible 2.11.5 version, you should run as root the following commands:
 
 ```bash
 apt-get install python-pip3
 pip3 install ansible
 ```
-Please note that configurations of target computers are configured to have test user with sudo capabilities with no password. So before you can use these scripts you should install a minimal debian 9 system (perhaps using debian stable netinstall image) and execute the following commands:
+Please note that configurations of target computers are configured to have test user with sudo capabilities with no password. So before you can use these scripts you should install a minimal Debian 11 GNU/Linux system (perhaps using debian stable netinstall image) and execute the following commands:
 
 ```bash
 apt-get install ssh sudo
