@@ -25,7 +25,7 @@
 
 - name: Install required software (Debian | Ubuntu)
   ansible.builtin.apt: 
-    name: python-openssl 
+    name: python3-openssl 
     state: present
     update_cache: yes
   when: ansible_distribution=="Debian" or ansible_distribution=="Ubuntu"
