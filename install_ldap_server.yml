@@ -45,11 +45,15 @@
         name: CA
 
 - hosts: ldap_server
-  vars_files:
-    - ldap_config_vars.yml
   tasks:
+   - name: Load vault values
+     ansible.builtin.include_vars: vault.yml
+
+   - name: Load variables
+     ansible.builtin.include_vars: ldap_config_vars.yml
+
    - name: Install Open LDAP
-      ansible.builtin.import_role: 
-        name: openldap
+     ansible.builtin.import_role: 
+      name: openldap
 
   
