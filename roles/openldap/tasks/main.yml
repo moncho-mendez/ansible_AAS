@@ -90,7 +90,7 @@
 
 - name: Install ldap server
   ansible.builtin.apt:
-    name: ["slapd", "ldap-utils", "python-ldap"]
+    name: ["slapd", "ldap-utils", "python3-ldap"]
     state: present
 
 - name: Create directories to store certificates and keys
