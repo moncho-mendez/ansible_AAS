@@ -21,7 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-ldap_server_ip: "{{ hostvars['ldap_server'].ansible_ssh_host }}"
+ldap_server_ip: "{{ hostvars['ldap_server'].ansible_host }}"
 net_bcast_address: "{{ ldap_server_ip | ipaddr('broadcast') }}" #please pip install netaddr 
 ldap_server_domain: "ldap.esei.uvigo.es"
 ldap_organization_domain: "esei.uvigo.es"
