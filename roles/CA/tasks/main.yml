@@ -58,9 +58,6 @@
     path: "{{ CA.ca_cert_file }}"
     privatekey_path: "{{ CA.ca_priv_key }}"
     csr_path: "{{ CA.ca_csr_file }}"
-    key_usage:
-      - keyCertSign
-      - cRLSign
     provider: selfsigned
 
 - name: Generate clients
