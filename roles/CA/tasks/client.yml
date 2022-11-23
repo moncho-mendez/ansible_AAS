@@ -44,9 +44,4 @@
     csr_path: "{{ client_csr_file }}"
     ownca_path: "{{ CA.ca_cert_file }}"
     ownca_privatekey_path: "{{ CA.ca_priv_key }}"
-    key_usage:
-         - digitalSignature
-         - dataEncipherment
-    extended_key_usage: 
-         - serverAuth
     provider: ownca
