@@ -73,8 +73,9 @@
         path: "{{ item }}"
         group: "root"
         state: "directory"
-        mode: "755"
+        mode: "0755"
         owner: "root"
+        recurse: yes        
       loop:
         - "{{ files_dir }}"
         - "{{ CA.ca_cert_file | dirname }}"
@@ -83,7 +84,7 @@
       ansible.builtin.copy:
         dest: "{{ item }}"
         src: "{{ item }}"
-        mode: "644"
+        mode: "0644"
         owner: "root"
         group: "root"
       loop:
