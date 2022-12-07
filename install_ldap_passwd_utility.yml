@@ -74,8 +74,17 @@
         group: "root"
         state: "directory"
         mode: "0755"
-        owner: "root"
-        recurse: yes        
+        owner: "root"    
+      loop:
+        - "{{ files_dir }}"
+        - "{{ CA.ca_cert_file | dirname }}"
+
+    - name: Set permissions of directories to store certificates and keys
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: "directory"
+        mode: "755"
+        recurse: yes
       loop:
         - "{{ files_dir }}"
         - "{{ CA.ca_cert_file | dirname }}"
