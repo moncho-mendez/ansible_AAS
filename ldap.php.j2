@@ -14,30 +14,45 @@ function changePassword($server,$dn,$user,$oldPassword,$newPassword,$newPassword
      $con=ldap_connect($server, $port) or die("Could not connect to {$server}");
   else{
      putenv('LDAPTLS_REQCERT=never');
-     // ldap_set_option(NULL, LDAP_OPT_DEBUG_LEVEL, 7);
+     ldap_set_option(NULL, LDAP_OPT_DEBUG_LEVEL, 7);
      $con=ldap_connect('ldaps://'.$server, $port) or die("Could not connect to {$server}");
   }
+
+  if ($con === false){
+     $message[] = "Error E025 - Unable to connect to ldap.";
+     return false;
+  }
+
   ldap_set_option($con, LDAP_OPT_PROTOCOL_VERSION, 3);
   
   $findWhere = $dn;
   $findFilter = "(uid=$user)";
+
   #bind anon and find user by uid
-  $sr = ldap_search($con,$dn,$findFilter);
+  
+  if ( ($sr = ldap_search($con,$dn,$findFilter)) === false) {
+     $message[] = "Error E050 - User not found.";
+     return false;
+  }
+
   $records = ldap_get_entries($con, $sr);
 
+
   /* error if found more than one user */
+
   if ($records["count"] != "1") {
     $message[] = "Error E100 - Wrong user.";
     return false;
   }else {
     $message[] = "Found user <b>".$records[0]["cn"][0]."</b>";
   }
+
   /* try to bind as that user */
   if (ldap_bind($con, $records[0]["dn"], $oldPassword) === false) {
      $message[] = "Error E104 - Current password is wrong.";
      return false;
   }
-  else { }
+
   if ($newPassword != $newPasswordCnf ) {
     $message[] = "Error E101 - New passwords do not match! ";
     return false;
