@@ -38,8 +38,8 @@
       vars:
         packages:
           - apache2
-          - libapache2-mod-php7.3
-          - php7.3-ldap
+          - libapache2-mod-php7.4
+          - php7.4-ldap
           - libsasl2-modules-ldap
           - php-auth-sasl
 
@@ -53,7 +53,7 @@
         loop_var: curr_module
       vars:
         modules_to_enable:
-           - php7.3
+           - php7.4
 
     - name: copy passwd utility
       ansible.builtin.template:
