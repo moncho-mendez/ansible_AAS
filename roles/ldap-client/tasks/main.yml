@@ -3,6 +3,7 @@
 
 - name: Install client software
   ansible.builtin.apt:
+    update_cache: true
     name: ["ldap-utils", "jxplorer", "x11-xserver-utils"]
     state: present
 
