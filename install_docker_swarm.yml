@@ -21,7 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-- hosts: all
+- hosts: managers:workers
   tasks:
    - name: Install docker on all servers
      ansible.builtin.include_role: docker
@@ -33,14 +33,17 @@
        file: docker_vars.yml
 
    - name: Initialize swarm on leader
-     include_role: docker_leader
+     include_role: 
+       name: docker_leader
 
 - hosts: workers
   ansible.builtin.tasks:
    - name: Add workers to swarm cluster
-     include_role: docker_worker
+     include_role: 
+       name: docker_worker
 
 - hosts: managers:!leader
   ansible.builtin.tasks:
    - name: Add managers to swarm cluster
-     include_role: docker_manager
+     include_role: 
+       name: docker_manager
