@@ -28,7 +28,7 @@
   ignore_errors: yes
 
 - name: Initialize swarm
-  ansible.builtin.shell: "docker swarm init --advertise-address {{ advertise_address }}"
+  ansible.builtin.shell: "docker swarm init --advertise-addr {{ advertise_address }}"
 
 - name: Capture join token for workers
   ansible.builtin.shell: docker swarm join-token worker | tail -3
