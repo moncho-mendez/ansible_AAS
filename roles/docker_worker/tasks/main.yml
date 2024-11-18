@@ -28,4 +28,4 @@
 
 - name: Join to the swarm cluster as manager
   ansible.builtin.shell: "{{ hostvars['leader']['worker_cmd'] }}"
-  when: "{{ hostvars['leader']['worker_cmd'] }}" is defined
+  when: hostvars['leader']['worker_cmd'] is defined
