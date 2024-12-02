@@ -38,8 +38,8 @@
       vars:
         packages:
           - apache2
-          - libapache2-mod-php7.4
-          - php7.4-ldap
+          - libapache2-mod-php8.2
+          - php8.2-ldap
           - libsasl2-modules-ldap
           - php-auth-sasl
 
@@ -53,7 +53,9 @@
         loop_var: curr_module
       vars:
         modules_to_enable:
-           - php7.4
+           - php8.2
+      #Added because fails with an error that php8.2 is already enabled
+      ignore_errors: true
 
     - name: copy passwd utility
       ansible.builtin.template:
