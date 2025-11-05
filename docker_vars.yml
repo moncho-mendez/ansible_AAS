@@ -1,1 +1,1 @@
-advertise_address: "{{ hostvars['leader'].ansible_ssh_host }}"
+advertise_address: "{{ hostvars['leader'].ansible_host }}"

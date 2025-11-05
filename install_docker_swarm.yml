@@ -23,27 +23,28 @@
 
 - hosts: managers:workers
   tasks:
-   - name: Install docker on all servers
-     ansible.builtin.include_role: docker
+    - name: Install docker on all servers
+      ansible.builtin.include_role: 
+        name: docker
 
 - hosts: leader
   tasks:
-   - name: Load variables
-     ansible.builtin.include_vars: 
-       file: docker_vars.yml
+    - name: Load variables
+      ansible.builtin.include_vars: 
+        file: docker_vars.yml
 
-   - name: Initialize swarm on leader
-     include_role: 
-       name: docker_leader
+    - name: Initialize swarm on leader
+      ansible.builtin.include_role: 
+        name: docker_leader
 
 - hosts: workers
-  ansible.builtin.tasks:
-   - name: Add workers to swarm cluster
-     include_role: 
-       name: docker_worker
+  tasks:
+    - name: Add workers to swarm cluster
+      ansible.builtin.include_role: 
+        name: docker_worker
 
 - hosts: managers:!leader
-  ansible.builtin.tasks:
-   - name: Add managers to swarm cluster
-     include_role: 
-       name: docker_manager
+  tasks:
+    - name: Add managers to swarm cluster
+      ansible.builtin.include_role: 
+        name: docker_manager
