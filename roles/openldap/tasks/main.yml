@@ -82,7 +82,7 @@
       vtype: select
       value: MDB
     - question: slapd/unsafe_selfwrite_acl
-      vtype: note
+      vtype: note 
       value: ""
     - question: slapd/ppolicy_schema_needs_update
       vtype: select

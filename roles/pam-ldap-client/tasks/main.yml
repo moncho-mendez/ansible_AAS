@@ -25,7 +25,9 @@
 
 - name: Install packages
   ansible.builtin.apt:
-    name: ldap-utils
+    name: 
+     - ldap-utils
+     - debconf-utils
     state: present
 
 - name: Create directories to store certificates and keys
@@ -270,19 +272,11 @@
   - question: libpam-runtime/profiles
     type: multiselect
     description: "PAM profiles to enable:"
-    value: 
-  - question: libpam-runtime/conflicts
-    type: error
-    description: "Incompatible PAM profiles selected."
-    value: "unix, ldap, mkhomedir" #ccreds-save, unix, ldap, mkhomedir , ccreds-check
+    value: "unix, ldap, mkhomedir"
   - question: libpam-runtime/override
     type: boolean
     value: false
     description: "Override local changes to /etc/pam.d/common-*?"
-  - question: libpam-runtime/no_profiles_chosen
-    type: error
-    value: ""
-    description: "No PAM profiles have been selected."
 
 - name: Invoke dpkg-reconfigure to reconfigure libpam-runtime
   ansible.builtin.shell: dpkg-reconfigure  --frontend noninteractive  libpam-runtime
