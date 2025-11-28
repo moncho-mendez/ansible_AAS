@@ -159,7 +159,7 @@
     description: "Password for database login account:"
   - question: shared/ldapns/ldap_version
     type: select
-    value: 3
+    value: "3"
     description: "LDAP version to use:"
   - question: shared/ldapns/ldap-server
     type: string
@@ -208,7 +208,7 @@
     description: "Local encryption algorithm to use for passwords:"
   - question: shared/ldapns/ldap_version
     type: select
-    value: 3
+    value: "3"
     description: "LDAP version to use:"
   - question: libpam-ldap/binddn
     type: string
