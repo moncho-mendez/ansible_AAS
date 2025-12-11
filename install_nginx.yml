@@ -1,0 +1,169 @@
+---
+- name: Instalar nginx, PHP y Memcached en los webservers
+  hosts: webservers
+  become: true
+  gather_facts: true
+
+  vars:
+    # Ajusta la versión de PHP según tu distro
+    php_version: "8.2"
+
+    # Fichero donde meteremos la configuración de sesiones con memcached
+    php_sessions_ini: "/etc/php/8.2/mods-available/sessions-memcached.ini"
+
+    memcached_port: 11211
+    memcached_memory_mb: 256
+    memcached_listen_ip: "0.0.0.0"   # o la IP privada del servidor
+    memcached_max_connections: 1024
+
+    # Número de copias adicionales de cada clave (sesión).
+    # Si pones 2 con N servidores, tendrás 1 original + 2 réplicas = 3 copias.
+    memcached_number_of_replicas: 2
+
+  tasks:
+    - name: Instalar paquetes requeridos
+    # Ajusta nombres si tu distro usa otros (por ej. php-fpm vs php82-php-fpm)
+      ansible.builtin.package:
+        name:
+          - nginx
+          - "php{{ php_version }}-fpm"
+          - "php{{ php_version }}-cli"
+          - "php-memcached"
+          - memcached
+        state: present
+
+    - name: Configurar memcached (/etc/memcached.conf)
+      ansible.builtin.copy:
+        dest: /etc/memcached.conf
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          -m {{ memcached_memory_mb }}
+          -p {{ memcached_port }}
+          -u memcache
+          -l {{ memcached_listen_ip }}
+          -c {{ memcached_max_connections }}
+          -t 4
+          -R 200
+          -v
+      notify:
+        - restart php-fpm
+
+    - name: debug
+      ansible.builtin.set_fact:
+        memcached_servers: "{{ groups['webservers'] | map('extract', hostvars, 'ansible_host') | map('regex_replace', '^(.*)$', '\\1:' ~ memcached_port) | join(',') }}"
+      notify:
+        - restart memcached
+
+    - name: Eliminar PHP session handler por defecto (files)
+      ansible.builtin.lineinfile:
+        path: "/etc/php/{{ php_version }}/fpm/php.ini"
+        line: "session.save_handler = files"
+        state: absent 
+      notify:
+        - restart php-fpm
+
+    - name: Configurar PHP para usar memcached como session handler
+      ansible.builtin.copy:
+        dest: "{{ php_sessions_ini }}"
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          ; Configuración de sesiones con memcached
+          session.save_handler = memcached
+
+          ; Servidores memcached (generado desde el grupo webservers)
+          ; Ejemplo resultante:
+          ; session.save_path = "10.0.0.11:11211,10.0.0.12:11211,10.0.0.13:11211?persistent=1&binary_protocol=1&libketama_compatible=1&number_of_replicas={{ memcached_number_of_replicas }}"
+          session.save_path = "{{ memcached_servers }}?persistent=1&binary_protocol=1&libketama_compatible=1&number_of_replicas={{ memcached_number_of_replicas }}"
+
+          ; Opcional: endurecer algo más las sesiones
+          session.gc_maxlifetime = 1440
+          session.cookie_httponly = 1
+          session.use_strict_mode = 1
+      notify:
+        - restart php-fpm
+
+    - name: Habilitar módulo de sesiones memcached (Debian/Ubuntu)
+      ansible.builtin.file:
+        src: "{{ php_sessions_ini }}"
+        dest: "/etc/php/{{ php_version }}/fpm/conf.d/30-sessions-memcached.ini"
+        state: link
+      notify:
+        - restart php-fpm
+      when: ansible_os_family == "Debian"
+
+    - name: Configurar nginx para PHP-FPM (vhost por defecto simple)
+      ansible.builtin.copy:
+        dest: /etc/nginx/sites-available/default
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          server {
+              listen 80 default_server;
+              listen [::]:80 default_server;
+
+              root /var/www/html;
+              index index.php index.html index.htm;
+
+              server_name _;
+
+              location / {
+                  try_files $uri $uri/ /index.php?$args;
+              }
+
+              location ~ \.php$ {
+                  include snippets/fastcgi-php.conf;
+                  fastcgi_pass unix:/run/php/php{{ php_version }}-fpm.sock;
+              }
+
+              location ~ /\.ht {
+                  deny all;
+              }
+          }
+      notify:
+        - reload nginx
+
+    - name: "Página de ejemplo"
+      ansible.builtin.copy:
+        dest: /var/www/html/index.php
+        content: |
+          <?php
+            session_start();
+            phpinfo();
+          ?>
+        owner: user
+        group: users
+        mode: "0644"
+      notify:
+        - reload nginx
+        - restart php-fpm
+
+    - name: Asegurar servicios habilitados al arranque
+      ansible.builtin.service:
+        name: "{{ item }}"
+        enabled: true
+        state: started
+      loop:
+        - memcached
+        - nginx
+        - "php{{ php_version }}-fpm"
+
+  handlers:
+    - name: restart memcached
+      ansible.builtin.service:
+        name: memcached
+        state: restarted
+
+    - name: restart php-fpm
+      ansible.builtin.service:
+        name: "php{{ php_version }}-fpm"
+        state: restarted
+
+    - name: reload nginx
+      ansible.builtin.service:
+        name: nginx
+        state: reloaded
