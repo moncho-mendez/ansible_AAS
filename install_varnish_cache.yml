@@ -1,0 +1,145 @@
+---
+# cache_cluster.yml
+- hosts: cache
+  vars:
+    # IP virtual que se moverá entre cache1, cache2, cache3
+    vip_address: 10.0.0.100
+    vip_netmask: 24
+    vip_interface: eth0
+
+    # Puerto donde escucha Varnish de cara al cliente
+    varnish_port: 80
+
+    # Puerto donde escuchan los backends (nginx en webservers)
+    backend_port: 80
+
+    # Secreto para heartbeat (cámbialo en serio)
+    heartbeat_auth_secret: "mypassowrd123"
+
+    # Nombre del nodo "dueño" inicial del recurso en haresources
+    heartbeat_pref_node: "cache1"
+
+  tasks:
+    - name: Instalar paquetes necesarios
+      ansible.builtin.apt:
+        name:
+          - varnish
+          - heartbeat
+          - iproute2
+        state: present
+        update_cache: yes
+
+    # ---------------- Nombre de Host ----------------
+    - name: Establecer el nombre del host
+      ansible.builtin.copy:
+        dest: /etc/hostname
+        content: "{{ inventory_hostname }}\n"
+      notify: Restart hostname
+
+    - name: Asegurarse que el nombre del host existe en /etc/hosts
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        regexp: "^127\\.0\\.1\\.1"
+        line: "127.0.1.1   {{ inventory_hostname }}"
+        state: present
+      notify: Restart hostname
+
+    # ---------------- VARNISH ----------------
+
+    - name: Plantilla de configuración VCL de Varnish
+      ansible.builtin.template:
+        src: template/default.vcl.j2
+        dest: /etc/varnish/default.vcl
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart varnish
+
+    - name: Configurar parámetros de Varnish (Debian/Ubuntu clásico)
+      ansible.builtin.blockinfile:
+        path: /etc/default/varnish
+        marker: "# {mark} VARNISH CONFIGURATION BLOCK"
+        block: |
+          VARNISH_LISTEN_PORT={{ varnish_port }}
+          VARNISH_LISTEN_ADDRESS=0.0.0.0
+          VARNISH_VCL_CONF="/etc/varnish/default.vcl"
+          VARNISH_ADMIN_LISTEN_PORT=6082
+          VARNISH_ADMIN_LISTEN_ADDRESS=127.0.0.1
+          VARNISH_TTL=120
+          VARNISH_SECRET_FILE="/etc/varnish/secret"
+          VARNISH_STORAGE="malloc,256M" 
+
+          DAEMON_OPTS="-a ${VARNISH_LISTEN_ADDRESS}:${VARNISH_LISTEN_PORT} \
+          -f ${VARNISH_VCL_CONF} \
+          -T ${VARNISH_ADMIN_LISTEN_ADDRESS}:${VARNISH_ADMIN_LISTEN_PORT} \
+          -t ${VARNISH_TTL} \
+          -S $ {VARNISH_SECRET_FILE} \
+          -s ${VARNISH_STORAGE}"
+      notify: Restart varnish
+
+    # ---------------- HEARTBEAT ----------------
+
+    - name: Crear directorio de configuración de Heartbeat
+      ansible.builtin.file:
+        path: /etc/ha.d
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Configurar ha.cf
+      ansible.builtin.template:
+        src: template/ha.cf.j2
+        dest: /etc/ha.d/ha.cf
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart heartbeat
+
+    - name: Configurar haresources
+      ansible.builtin.template:
+        src: template/haresources.j2
+        dest: /etc/ha.d/haresources
+        owner: root
+        group: root
+        mode: '0644'
+      vars:
+        iface: enp0s8
+      notify: Restart heartbeat
+
+    - name: Configurar authkeys de Heartbeat
+      ansible.builtin.template:
+        src: template/authkeys.j2
+        dest: /etc/ha.d/authkeys
+        owner: root
+        group: root
+        mode: '0600'
+      notify: Restart heartbeat
+
+    # ---------------- SERVICIOS ----------------
+
+    - name: Habilitar y arrancar Varnish
+      ansible.builtin.service:
+        name: varnish
+        state: started
+        enabled: yes
+
+    - name: Habilitar y arrancar Heartbeat
+      ansible.builtin.service:
+        name: heartbeat
+        state: started
+        enabled: yes
+
+  handlers:
+    - name: Restart varnish
+      ansible.builtin.service:
+        name: varnish
+        state: restarted
+
+    - name: Restart heartbeat
+      ansible.builtin.service:
+        name: heartbeat
+        state: restarted
+
+    - name: Restart hostname
+      ansible.builtin.command: hostnamectl set-hostname {{ inventory_hostname }}

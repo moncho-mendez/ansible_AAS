@@ -23,7 +23,7 @@
   tasks:
     - name: Instalar paquetes requeridos
     # Ajusta nombres si tu distro usa otros (por ej. php-fpm vs php82-php-fpm)
-      ansible.builtin.package:
+      ansible.builtin.apt:
         name:
           - nginx
           - "php{{ php_version }}-fpm"

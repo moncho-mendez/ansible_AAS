@@ -24,3 +24,7 @@ swarm_worker1 ansible_host=192.168.1.7 ansible_user=user ansible_become=yes
 web1 ansible_host=192.168.1.50 ansible_user=user ansible_become=yes
 web2 ansible_host=192.168.1.54 ansible_user=user ansible_become=yes
 web3 ansible_host=192.168.1.55 ansible_user=user ansible_become=yes
+
+[cache]
+cache1 ansible_host=192.168.1.56 ansible_user=user ansible_become=yes
+cache2 ansible_host=192.168.1.57 ansible_user=user ansible_become=yes

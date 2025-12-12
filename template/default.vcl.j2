@@ -1,0 +1,45 @@
+vcl 4.0;
+
+import directors;
+
+backend default { .host = "0.0.0.0"; .port = "80"; }
+
+# Definir los backends a partir del grupo webservers
+{% for host in groups['webservers'] %}
+backend web_{{ host }} {
+    .host = "{{ hostvars[host]['ansible_host'] | default(host) }}";
+    .port = "{{ backend_port }}";
+}
+{% endfor %}
+
+sub vcl_init {
+
+    new web_cluster = directors.round_robin();
+  {% for host in groups['webservers'] %}
+    web_cluster.add_backend(web_{{ host }});
+  {% endfor %}    
+}
+
+sub vcl_recv {
+    # Seleccionar el director como backend por defecto
+    set req.backend_hint = web_cluster.backend();
+
+    # Ajustes típicos de cache (simplificados, ajusta a tu gusto)
+    if (req.method != "GET" && req.method != "HEAD") {
+        return (pass);
+    }
+
+    if (req.http.Authorization || req.http.Cookie) {
+        return (pass);
+    }
+}
+
+sub vcl_backend_response {
+    # Se puede tunear el TTL aquí
+    set beresp.ttl = 120s;
+}
+
+sub vcl_deliver {
+    # Añadimos cabecera para depuración
+    set resp.http.X-Cache-Server = server.hostname;
+}
