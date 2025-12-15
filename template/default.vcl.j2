@@ -2,8 +2,6 @@ vcl 4.0;
 
 import directors;
 
-backend default { .host = "0.0.0.0"; .port = "80"; }
-
 # Definir los backends a partir del grupo webservers
 {% for host in groups['webservers'] %}
 backend web_{{ host }} {
