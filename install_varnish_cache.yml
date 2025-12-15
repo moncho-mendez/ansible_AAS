@@ -3,9 +3,7 @@
 - hosts: cache
   vars:
     # IP virtual que se moverá entre cache1, cache2, cache3
-    vip_address: 10.0.0.100
-    vip_netmask: 24
-    vip_interface: eth0
+    vip_interface: enp0s8
 
     # Puerto donde escucha Varnish de cara al cliente
     varnish_port: 80
@@ -55,26 +53,38 @@
         mode: '0644'
       notify: Restart varnish
 
-    - name: Configurar parámetros de Varnish (Debian/Ubuntu clásico)
-      ansible.builtin.blockinfile:
-        path: /etc/default/varnish
-        marker: "# {mark} VARNISH CONFIGURATION BLOCK"
-        block: |
-          VARNISH_LISTEN_PORT={{ varnish_port }}
-          VARNISH_LISTEN_ADDRESS=0.0.0.0
-          VARNISH_VCL_CONF="/etc/varnish/default.vcl"
-          VARNISH_ADMIN_LISTEN_PORT=6082
-          VARNISH_ADMIN_LISTEN_ADDRESS=127.0.0.1
-          VARNISH_TTL=120
-          VARNISH_SECRET_FILE="/etc/varnish/secret"
-          VARNISH_STORAGE="malloc,256M" 
+    # - name: Configurar parámetros de Varnish (Debian/Ubuntu clásico)
+    #   ansible.builtin.blockinfile:
+    #     path: /etc/default/varnish
+    #     marker: "# {mark} VARNISH CONFIGURATION BLOCK"
+    #     block: |
+    #       VARNISH_LISTEN_PORT={{ varnish_port }}
+    #       VARNISH_LISTEN_ADDRESS=0.0.0.0
+    #       VARNISH_VCL_CONF="/etc/varnish/default.vcl"
+    #       VARNISH_ADMIN_LISTEN_PORT=6082
+    #       VARNISH_ADMIN_LISTEN_ADDRESS=127.0.0.1
+    #       VARNISH_TTL=120
+    #       VARNISH_SECRET_FILE="/etc/varnish/secret"
+    #       VARNISH_STORAGE="malloc,256M" 
 
-          DAEMON_OPTS="-a ${VARNISH_LISTEN_ADDRESS}:${VARNISH_LISTEN_PORT} \
-          -f ${VARNISH_VCL_CONF} \
-          -T ${VARNISH_ADMIN_LISTEN_ADDRESS}:${VARNISH_ADMIN_LISTEN_PORT} \
-          -t ${VARNISH_TTL} \
-          -S $ {VARNISH_SECRET_FILE} \
-          -s ${VARNISH_STORAGE}"
+    #       DAEMON_OPTS="-a ${VARNISH_LISTEN_ADDRESS}:${VARNISH_LISTEN_PORT} \
+    #       -f ${VARNISH_VCL_CONF} \
+    #       -T ${VARNISH_ADMIN_LISTEN_ADDRESS}:${VARNISH_ADMIN_LISTEN_PORT} \
+    #       -t ${VARNISH_TTL} \
+    #       -S $ {VARNISH_SECRET_FILE} \
+    #       -s ${VARNISH_STORAGE}"
+    #   notify: Restart varnish
+
+    - name: Configurar parámetros de Varnish (Debian/Ubuntu con systemd)
+      ansible.builtin.lineinfile:
+        path: /usr/lib/systemd/system/varnish.service
+        regexp: '-a .* \\$'
+        line: '          -a :{{ varnish_port }} \'
+      notify: Systemd reload
+
+    - name: Asegurar configuración de backend en Varnish (Debian/Ubuntu con systemd)
+      ansible.builtin.debug:
+        msg: "Restarting varnish to apply backend config"
       notify: Restart varnish
 
     # ---------------- HEARTBEAT ----------------
@@ -143,3 +153,6 @@
 
     - name: Restart hostname
       ansible.builtin.command: hostnamectl set-hostname {{ inventory_hostname }}
+
+    - name: Systemd reload
+      ansible.builtin.command: systemctl daemon-reload
