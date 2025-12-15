@@ -28,6 +28,7 @@
           - nginx
           - "php{{ php_version }}-fpm"
           - "php{{ php_version }}-cli"
+          - "php{{ php_version }}-opcache"
           - "php-memcached"
           - memcached
         state: present
