@@ -8,7 +8,7 @@
     # Puerto donde escucha Varnish de cara al cliente
     varnish_port: 80
 
-    # Puerto donde escuchan los backends (nginx en webservers)
+    # Puerto donde escuchan los backends (nginx en webservers, capa de servidores)
     backend_port: 80
 
     # Secreto para heartbeat (cámbialo en serio)
@@ -23,7 +23,6 @@
         name:
           - varnish
           - heartbeat
-          - iproute2
         state: present
         update_cache: yes
 
@@ -83,9 +82,9 @@
       notify: Systemd reload
 
     - name: Asegurar configuración de backend en Varnish (Debian/Ubuntu con systemd)
-      ansible.builtin.debug:
-        msg: "Restarting varnish to apply backend config"
-      notify: Restart varnish
+      ansible.builtin.service:
+        name: varnish
+        state: restarted
 
     # ---------------- HEARTBEAT ----------------
 
@@ -113,8 +112,6 @@
         owner: root
         group: root
         mode: '0644'
-      vars:
-        iface: enp0s8
       notify: Restart heartbeat
 
     - name: Configurar authkeys de Heartbeat
@@ -128,19 +125,22 @@
 
     # ---------------- SERVICIOS ----------------
 
-    - name: Habilitar y arrancar Varnish
-      ansible.builtin.service:
-        name: varnish
-        state: started
-        enabled: yes
-
-    - name: Habilitar y arrancar Heartbeat
-      ansible.builtin.service:
-        name: heartbeat
-        state: started
-        enabled: yes
-
+    # - name: Reiniciar Varnish y Heartbeat
+    #   ansible.builtin.service:
+    #     name: varnish
+    #     state: restarted
+    #     enabled: yes
+    #   loop:
+    #     - varnish
+    #     - heartbeat
+  
   handlers:
+    - name: Systemd reload
+      ansible.builtin.command: systemctl daemon-reload
+
+    - name: Restart hostname
+      ansible.builtin.command: hostnamectl set-hostname {{ inventory_hostname }}
+
     - name: Restart varnish
       ansible.builtin.service:
         name: varnish
@@ -151,8 +151,4 @@
         name: heartbeat
         state: restarted
 
-    - name: Restart hostname
-      ansible.builtin.command: hostnamectl set-hostname {{ inventory_hostname }}
 
-    - name: Systemd reload
-      ansible.builtin.command: systemctl daemon-reload

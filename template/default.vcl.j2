@@ -23,21 +23,21 @@ sub vcl_recv {
     set req.backend_hint = web_cluster.backend();
 
     # Ajustes típicos de cache (simplificados, ajusta a tu gusto)
-    if (req.method != "GET" && req.method != "HEAD") {
-        return (pass);
-    }
+    #if (req.method != "GET" && req.method != "HEAD") {
+    #    return (pass);
+    #}
 
-    if (req.http.Authorization || req.http.Cookie) {
-        return (pass);
-    }
+    #if (req.http.Authorization || req.http.Cookie) {
+    #    return (pass);
+    #}
 }
 
-sub vcl_backend_response {
-    # Se puede tunear el TTL aquí
-    set beresp.ttl = 120s;
-}
+#sub vcl_backend_response {
+#    # Se puede tunear el TTL aquí
+#    set beresp.ttl = 120s;
+#}
 
-sub vcl_deliver {
-    # Añadimos cabecera para depuración
-    set resp.http.X-Cache-Server = server.hostname;
-}
+#sub vcl_deliver {
+#    # Añadimos cabecera para depuración
+#    set resp.http.X-Cache-Server = server.hostname;
+#}
